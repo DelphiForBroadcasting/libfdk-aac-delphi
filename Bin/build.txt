@@ -1,0 +1,7 @@
+sudo apt-get install pkg-config autoconf automake libtool
+git clone https://github.com/mstorsjo/fdk-aac.git
+./autogen.sh
+./configure cc=x86_64-w64-mingw32-gcc cxx=x86_64-w64-mingw32-g++  --host=x86_64-w64-mingw32 --target=mingw32 --enable-static=no --with-pic=yes --enable-shared
+make
+find . -name "*.dll"
+cd fdk-aac/.libs/
