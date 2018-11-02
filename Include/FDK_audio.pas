@@ -737,9 +737,9 @@ type
   PPLIB_INFO = ^PLIB_INFO;
   PLIB_INFO = ^LIB_INFO;
   LIB_INFO = record
-    title: PAnsiChar;
-    build_date: PAnsiChar;
-    build_time: PAnsiChar;
+    title: MarshaledAString;
+    build_date: MarshaledAString;
+    build_time: MarshaledAString;
     module_id: FDK_MODULE_ID;
     version: Integer;
     flags: Cardinal;

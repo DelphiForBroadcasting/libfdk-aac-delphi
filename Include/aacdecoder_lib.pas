@@ -468,6 +468,7 @@ uses
   FDK_audio;
 
 const
+  _PU = '';
   {$IF Defined(MSWINDOWS)}
     {$IFDEF CPUX64}
       libfdk_aac = 'libfdk-aac-2.dll';
@@ -477,6 +478,7 @@ const
     {$ENDIF}
   {$ELSEIF Defined(MACOS)}
     libfdk_aac = '@executable_path/../Frameworks/libfdk-aac-2.dylib';
+    _PU = '_'
   {$ELSEIF Defined(UNIX)}
     libfdk_aac = 'libfdk-aac-2.so';
   {$IFEND}
@@ -945,7 +947,7 @@ type
  * \return        Error code.
  *)
 function aacDecoder_AncDataInit(self: HANDLE_AACDECODER; buffer: PByte; size: Integer): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_AncDataInit' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_AncDataInit';
 
 (**
  * \brief Get one ancillary data element.
@@ -961,7 +963,7 @@ function aacDecoder_AncDataInit(self: HANDLE_AACDECODER; buffer: PByte; size: In
 function aacDecoder_AncDataGet(self: HANDLE_AACDECODER;
                                                    index: Integer; var ptr: PByte;
                                                    var size: Integer): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_AncDataGet' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_AncDataGet';
 
 (**
  * \brief Set one single decoder parameter.
@@ -974,7 +976,7 @@ function aacDecoder_AncDataGet(self: HANDLE_AACDECODER;
 function aacDecoder_SetParam(const self: HANDLE_AACDECODER;
                                                  const param: AACDEC_PARAM;
                                                  const value: Integer): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_SetParam' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_SetParam';
 
 (**
  * \brief              Get free bytes inside decoder internal buffer.
@@ -984,7 +986,7 @@ function aacDecoder_SetParam(const self: HANDLE_AACDECODER;
  * \return             Error code.
  *)
 function aacDecoder_GetFreeBytes(const self: HANDLE_AACDECODER; var pFreeBytes: Cardinal): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_GetFreeBytes' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_GetFreeBytes';
 
 (**
  * \brief               Open an AAC decoder instance.
@@ -994,7 +996,7 @@ function aacDecoder_GetFreeBytes(const self: HANDLE_AACDECODER; var pFreeBytes: 
  *)
 function aacDecoder_Open(transportFmt: TRANSPORT_TYPE;
                                              nrOfLayers: Cardinal): HANDLE_AACDECODER;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_Open' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_Open';
 
 (**
  * \brief Explicitly configure the decoder by passing a raw AudioSpecificConfig
@@ -1014,7 +1016,7 @@ function aacDecoder_Open(transportFmt: TRANSPORT_TYPE;
 function aacDecoder_ConfigRaw(self: HANDLE_AACDECODER;
                                                   conf: Pointer;
                                                   const length: PCardinal): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_ConfigRaw' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_ConfigRaw';
 
 (**
  * \brief Submit raw ISO base media file format boxes to decoder for parsing
@@ -1029,7 +1031,7 @@ function aacDecoder_ConfigRaw(self: HANDLE_AACDECODER;
 function aacDecoder_RawISOBMFFData(self: HANDLE_AACDECODER;
                                                        buffer: PByte;
                                                        length: Cardinal): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_RawISOBMFFData' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_RawISOBMFFData';
 
 (**
  * \brief Fill AAC decoder's internal input buffer with bitstream data from the
@@ -1058,7 +1060,7 @@ function aacDecoder_Fill(self: HANDLE_AACDECODER;
                                              pBuffer: PByte;
                                              const bufferSize: PCardinal;
                                              var bytesValid: Cardinal): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_Fill' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_Fill';
 
 const
   AACDEC_CONCEAL =                                                       
@@ -1097,7 +1099,7 @@ function aacDecoder_DecodeFrame(self: HANDLE_AACDECODER;
                                                     pTimeData: PSmallInt;
                                                     const timeDataSize: Integer;
                                                     const flags: Cardinal): AAC_DECODER_ERROR;
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_DecodeFrame' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_DecodeFrame';
 
 (**
  * \brief       De-allocate all resources of an AAC decoder instance.
@@ -1106,7 +1108,7 @@ function aacDecoder_DecodeFrame(self: HANDLE_AACDECODER;
  * \return      void.
  *)
 procedure aacDecoder_Close(self: HANDLE_AACDECODER);
- cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_Close' {$ENDIF};
+ cdecl; external libfdk_aac name _PU + 'aacDecoder_Close';
 
 (**
  * \brief       Get CStreamInfo handle from decoder.
@@ -1115,7 +1117,7 @@ procedure aacDecoder_Close(self: HANDLE_AACDECODER);
  * \return      Reference to requested CStreamInfo.
  *)
 function aacDecoder_GetStreamInfo(self: HANDLE_AACDECODER): PCStreamInfo;
-  cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_GetStreamInfo' {$ENDIF};
+  cdecl; external libfdk_aac name _PU + 'aacDecoder_GetStreamInfo';
 
 (**
  * \brief       Get decoder library info.
@@ -1124,7 +1126,7 @@ function aacDecoder_GetStreamInfo(self: HANDLE_AACDECODER): PCStreamInfo;
  * \return      0 on success.
  *)
 function aacDecoder_GetLibInfo(var info: array of LIB_INFO): Integer;
-  cdecl; external libfdk_aac {$IFDEF MACOS} name '_aacDecoder_GetLibInfo' {$ENDIF};
+  cdecl; external libfdk_aac name _PU + 'aacDecoder_GetLibInfo';
 
 implementation
 
