@@ -1,7 +1,7 @@
 ﻿(* -----------------------------------------------------------------------------
 Software License for The Fraunhofer FDK AAC Codec Library for Android
 
-© Copyright  1995 - 2018 Fraunhofer-Gesellschaft zur Förderung der angewandten
+© Copyright  1995 - 2019 Fraunhofer-Gesellschaft zur Förderung der angewandten
 Forschung e.V. All rights reserved.
 
  1.    INTRODUCTION
@@ -100,6 +100,8 @@ amm-info@iis.fraunhofer.de
 
 *******************************************************************************)
 
+//#ifndef AACDECODER_LIB_H
+//#define AACDECODER_LIB_H
 
 (**
  * \file   aacdecoder_lib.h
@@ -162,9 +164,6 @@ The contents of each file is described in detail in this document. All header
 files are provided for usage in specific C/C++ programs. The main AAC decoder
 library API functions are located in aacdecoder_lib.h header file.
 
-In binary releases the decoder core resides in statically linkable libraries,
-for example libAACdec.a.
-
 
 \section Calling_Sequence Calling Sequence
 
@@ -172,19 +171,7 @@ The following sequence is necessary for proper decoding of ISO/MPEG-2/4 AAC,
 HE-AAC v2, or MPEG-D USAC bitstreams. In the following description, input stream
 read and output write function details are left out, since they may be
 implemented in a variety of configurations depending on the user's specific
-requirements. The example implementation uses file-based input/output, and in
-such case one may call mpegFileRead_Open() to open an input file and to allocate
-memory for the required structures, and the corresponding mpegFileRead_Close()
-to close opened files and to de-allocate associated structures.
-mpegFileRead_Open() will attempt to detect the bitstream format and in case of
-MPEG-4 file format or Raw Packets file format (a proprietary Fraunhofer IIS file
-format suitable only for testing) it will read the Audio Specific Config data
-(ASC). An unsuccessful attempt to recognize the bitstream format requires the
-user to provide this information manually. For any other bitstream formats that
-are usually applicable in streaming applications, the decoder itself will try to
-synchronize and parse the given bitstream fragment using the FDK transport
-library. Hence, for streaming applications (without file access) this step is
-not necessary.
+requirements.
 
 
 -# Call aacDecoder_Open() to open and retrieve a handle to a new AAC decoder
@@ -203,19 +190,17 @@ do {
 working memory (a client-supplied input buffer "inBuffer" in framework). This
 buffer will be used to load AAC bitstream data to the decoder.  Only when all
 data in this buffer has been processed will the decoder signal an empty buffer.
-For file-based input, you may invoke mpegFileRead_Read() to acquire new
-bitstream data.
 -# Call aacDecoder_Fill() to fill the decoder's internal bitstream input buffer
 with the client-supplied bitstream input buffer. Note, if the data loaded in to
 the internal buffer is not sufficient to decode a frame,
 aacDecoder_DecodeFrame() will return ::AAC_DEC_NOT_ENOUGH_BITS until a
 sufficient amount of data is loaded in to the internal buffer. For streaming
 formats (ADTS, LOAS), it is acceptable to load more than one frame to the
-decoder. However, for RAW file format (Fraunhofer IIS proprietary format), only
-one frame may be loaded to the decoder per aacDecoder_DecodeFrame() call. For
-least amount of communication delay, fill and decode should be performed on a
-frame by frame basis. \code ErrorStatus = aacDecoder_Fill(aacDecoderInfo,
-inBuffer, bytesRead, bytesValid); \endcode
+decoder. However, for packed based formats, only one frame may be loaded to the
+decoder per aacDecoder_DecodeFrame() call. For least amount of communication
+delay, fill and decode should be performed on a frame by frame basis. \code
+    ErrorStatus = aacDecoder_Fill(aacDecoderInfo, inBuffer, bytesRead,
+bytesValid); \endcode
 -# Call aacDecoder_DecodeFrame(). This function decodes one frame and writes
 decoded PCM audio data to a client-supplied buffer. It is the client's
 responsibility to allocate a buffer which is large enough to hold the decoded
@@ -223,12 +208,9 @@ output data. \code ErrorStatus = aacDecoder_DecodeFrame(aacDecoderInfo,
 TimeData, OUT_BUF_SIZE, flags); \endcode If the bitstream configuration (number
 of channels, sample rate, frame size) is not known a priori, you may call
 aacDecoder_GetStreamInfo() to retrieve a structure that contains this
-information. You may use this data to initialize an audio output device. In the
-example program, if the number of channels or the sample rate has changed since
-program start or the previously decoded frame, the audio output device is then
-re-initialized. If WAVE file output is chosen, a new WAVE file for each new
-stream configuration is be created. \code p_si =
-aacDecoder_GetStreamInfo(aacDecoderInfo); \endcode
+information. You may use this data to initialize an audio output device. \code
+    p_si = aacDecoder_GetStreamInfo(aacDecoderInfo);
+\endcode
 -# Repeat steps 5 to 7 until no data is available to decode any more, or in case
 of error. \code } while (bytesRead[0] > 0 || doFlush || doBsFlush ||
 forceContinue); \endcode
@@ -237,7 +219,7 @@ structures. \code aacDecoder_Close(aacDecoderInfo); \endcode
 
 \image latex decode.png "Decode calling sequence" width=11cm
 
-\image latex change_source.png "Change data source sequence" width 5cm
+\image latex change_source.png "Change data source sequence" width=5cm
 
 \image latex conceal.png "Error concealment sequence" width=14cm
 
@@ -294,16 +276,14 @@ input buffer, and one to hold the decoded output PCM sample data. In resource
 limited applications, the output buffer may be reused as an external input
 buffer prior to the subsequence aacDecoder_Fill() function call.
 
-The external input buffer is set in the example program and its size is defined
-by ::IN_BUF_SIZE. You may freely choose different buffer sizes. To feed the data
-to the decoder-internal input buffer, use the function aacDecoder_Fill(). This
-function returns important information regarding the number of bytes in the
-external input buffer that have not yet been copied into the internal input
-buffer (variable bytesValid). Once the external buffer has been fully copied, it
-can be completely re-filled again. In case you wish to refill the buffer while
-there are unprocessed bytes (bytesValid is unequal 0), you should preserve the
-unconsumed data. However, we recommend to refill the buffer only when bytesValid
-returns 0.
+To feed the data to the decoder-internal input buffer, use the
+function aacDecoder_Fill(). This function returns important information
+regarding the number of bytes in the external input buffer that have not yet
+been copied into the internal input buffer (variable bytesValid). Once the
+external buffer has been fully copied, it can be completely re-filled again. In
+case you wish to refill the buffer while there are unprocessed bytes (bytesValid
+is unequal 0), you should preserve the unconsumed data. However, we recommend to
+refill the buffer only when bytesValid returns 0.
 
 The bytesValid parameter is an input and output parameter to the FDK decoder. As
 an input, it signals how many valid bytes are available in the external buffer.
@@ -338,10 +318,7 @@ explanation, please refer to ISO/IEC 13818-7:2005(E), chapter 8.5.3.2.
 In case a Program Config is included in the audio configuration, the channel
 mapping described within it will be adopted.
 
-In case of MPEG-D Surround the channel mapping will follow the same criteria
-described in ISO/IEC 13818-7:2005(E), but adding corresponding top channels (if
-available) to the channel types in order to avoid ambiguity. The examples below
-explain these aspects in detail.
+The examples below explain these aspects in detail.
 
 \section OutputFormatChange Changing the audio output format
 
@@ -450,12 +427,11 @@ Where N equals to CStreamInfo::frameSize .
 \endverbatim
 
 *)
- 
- (**
- * Conversion to Pascal Copyright 2016 (c) Oleksandr Nazaruk <mail@freehand.com.ua>
+
+(**
+ * Conversion to Pascal Copyright 2021 (c) Oleksandr Nazaruk <mail@freehand.com.ua>
  *
  *)
-
 
 unit aacdecoder_lib;
 
@@ -476,30 +452,32 @@ const
     {$IFDEF CPUX86}
       libfdk_aac = 'libfdk-aac-2.dll';
     {$ENDIF}
-  {$ELSEIF Defined(MACOS)}
+  {$ELSEIF Defined(DARWIN) or Defined(MACOS)}
     libfdk_aac = '@executable_path/../Frameworks/libfdk-aac-2.dylib';
     _PU = '_'
   {$ELSEIF Defined(UNIX)}
-    libfdk_aac = 'libfdk-aac-2.so';
+    libfdk_aac = '/usr/lib/libfdk-aac-2.so';
   {$IFEND}
 
-const 
+
+const
   AACDECODER_LIB_VL0 = 3;
-  AACDECODER_LIB_VL1 = 0;
+  AACDECODER_LIB_VL1 = 2;
   AACDECODER_LIB_VL2 = 0;
+
 
 (**
  * \brief  AAC decoder error codes.
  *)
 type
-  AAC_DECODER_ERROR = ( 
+  AAC_DECODER_ERROR = (
     AAC_DEC_OK =
         $0000, (*!< No error occurred. Output buffer is valid and error free. *)
     AAC_DEC_OUT_OF_MEMORY =
         $0002, (*!< Heap returned NULL pointer. Output buffer is invalid. *)
     AAC_DEC_UNKNOWN =
         $0005, (*!< Error condition is of unknown reason, or from a another
-                  module. Output buffer is invalid. *)
+                   module. Output buffer is invalid. *)
 
     (* Synchronization errors. Output buffer is invalid. *)
     aac_dec_sync_error_start = $1000,
@@ -526,18 +504,18 @@ type
         $2006, (*!< More than one layer for AAC scalable is not supported. *)
     AAC_DEC_UNSUPPORTED_CHANNELCONFIG =
         $2007, (*!< The channel configuration (either number or arrangement) is
-                  not supported. *)
+                   not supported. *)
     AAC_DEC_UNSUPPORTED_SAMPLINGRATE = $2008, (*!< The sample rate specified in
                                                   the configuration is not
                                                   supported. *)
     AAC_DEC_INVALID_SBR_CONFIG =
         $2009, (*!< The SBR configuration is not supported. *)
     AAC_DEC_SET_PARAM_FAIL = $200A,  (*!< The parameter could not be set. Either
-                                        the value was out of range or the
-                                        parameter does  not exist. *)
+                                         the value was out of range or the
+                                         parameter does  not exist. *)
     AAC_DEC_NEED_TO_RESTART = $200B, (*!< The decoder needs to be restarted,
-                                        since the required configuration change
-                                        cannot be performed. *)
+                                         since the required configuration change
+                                         cannot be performed. *)
     AAC_DEC_OUTPUT_BUFFER_TOO_SMALL =
         $200C, (*!< The provided output buffer is too small. *)
     aac_dec_init_error_end = $2FFF,
@@ -547,11 +525,11 @@ type
     AAC_DEC_TRANSPORT_ERROR =
         $4001, (*!< The transport decoder encountered an unexpected error. *)
     AAC_DEC_PARSE_ERROR = $4002, (*!< Error while parsing the bitstream. Most
-                                    probably it is corrupted, or the system
-                                    crashed. *)
+                                     probably it is corrupted, or the system
+                                     crashed. *)
     AAC_DEC_UNSUPPORTED_EXTENSION_PAYLOAD =
         $4003, (*!< Error while parsing the extension payload of the bitstream.
-                  The extension payload type found is not supported. *)
+                   The extension payload type found is not supported. *)
     AAC_DEC_DECODE_FRAME_ERROR = $4004, (*!< The parsed bitstream value is out of
                                             range. Most probably the bitstream is
                                             corrupt, or the system crashed. *)
@@ -561,20 +539,20 @@ type
                                             or the system  crashed. *)
     AAC_DEC_UNSUPPORTED_PREDICTION =
         $4007, (*!< Predictor found, but not supported in the AAC Low Complexity
-                  profile. Most probably the bitstream is corrupt, or has a wrong
-                  format. *)
+                   profile. Most probably the bitstream is corrupt, or has a wrong
+                   format. *)
     AAC_DEC_UNSUPPORTED_CCE = $4008, (*!< A CCE element was found which is not
-                                        supported. Most probably the bitstream is
-                                        corrupt, or has a wrong format. *)
+                                         supported. Most probably the bitstream is
+                                         corrupt, or has a wrong format. *)
     AAC_DEC_UNSUPPORTED_LFE = $4009, (*!< A LFE element was found which is not
-                                        supported. Most probably the bitstream is
-                                        corrupt, or has a wrong format. *)
+                                         supported. Most probably the bitstream is
+                                         corrupt, or has a wrong format. *)
     AAC_DEC_UNSUPPORTED_GAIN_CONTROL_DATA =
         $400A, (*!< Gain control data found but not supported. Most probably the
-                  bitstream is corrupt, or has a wrong format. *)
+                   bitstream is corrupt, or has a wrong format. *)
     AAC_DEC_UNSUPPORTED_SBA =
         $400B, (*!< SBA found, but currently not supported in the BSAC profile.
-                *)
+                 *)
     AAC_DEC_TNS_READ_ERROR = $400C, (*!< Error while reading TNS data. Most
                                         probably the bitstream is corrupt or the
                                         system crashed. *)
@@ -586,40 +564,32 @@ type
     AAC_DEC_ANC_DATA_ERROR =
         $8001, (*!< Non severe error concerning the ancillary data handling. *)
     AAC_DEC_TOO_SMALL_ANC_BUFFER = $8002,  (*!< The registered ancillary data
-                                              buffer is too small to receive the
-                                              parsed data. *)
+                                               buffer is too small to receive the
+                                               parsed data. *)
     AAC_DEC_TOO_MANY_ANC_ELEMENTS = $8003, (*!< More than the allowed number of
-                                              ancillary data elements should be
-                                              written to buffer. *)
+                                               ancillary data elements should be
+                                               written to buffer. *)
     aac_dec_anc_data_error_end = $8FFF
 
   );
 
 (** Macro to identify initialization errors. Output buffer is invalid. *)
-(*
-#define IS_INIT_ERROR(err)                                                    \
-  ((((err) >= aac_dec_init_error_start) && ((err) <= aac_dec_init_error_end)) \
-       ? 1                                                                    \
-       : 0)
-*)
+//#define IS_INIT_ERROR(err)                                                    \
+//  ((((err) >= aac_dec_init_error_start) && ((err) <= aac_dec_init_error_end)) \
+//       ? 1                                                                    \
+//       : 0)
 (** Macro to identify decode errors. Output buffer is valid but concealed. *)
-(*
-#define IS_DECODE_ERROR(err)                 \
-  ((((err) >= aac_dec_decode_error_start) && \
-    ((err) <= aac_dec_decode_error_end))     \
-       ? 1                                   \
-       : 0)
-*)
+//#define IS_DECODE_ERROR(err)                 \
+//  ((((err) >= aac_dec_decode_error_start) && \
+//    ((err) <= aac_dec_decode_error_end))     \
+//       ? 1                                   \
+//       : 0)
 (**
  * Macro to identify if the audio output buffer contains valid samples after
  * calling aacDecoder_DecodeFrame(). Output buffer is valid but can be
  * concealed.
  *)
- (*
-#define IS_OUTPUT_VALID(err) (((err) == AAC_DEC_OK) || IS_DECODE_ERROR(err))
-*)
-
-
+//#define IS_OUTPUT_VALID(err) (((err) == AAC_DEC_OK) || IS_DECODE_ERROR(err))
 
 (*! \enum  AAC_MD_PROFILE
  *  \brief The available metadata profiles which are mostly related to downmixing. The values define the arguments
@@ -647,11 +617,11 @@ type
             *)
     AAC_MD_PROFILE_ARIB_JAPAN =
         3 (*!< Downmix creation as described in ABNT NBR 15602-2. But if advanced
-              downmix metadata (ISO/IEC 14496:3 AMD 4) is available it will be
-              preferred because of the higher resolutions. In addition the
-            metadata expiry time will be set to the value defined in the ARIB
-            standard (see ::AAC_METADATA_EXPIRY_TIME).
-          *)
+               downmix metadata (ISO/IEC 14496:3 AMD 4) is available it will be
+               preferred because of the higher resolutions. In addition the
+             metadata expiry time will be set to the value defined in the ARIB
+             standard (see ::AAC_METADATA_EXPIRY_TIME).
+           *)
   );
 
 (*! \enum  AAC_DRC_DEFAULT_PRESENTATION_MODE_OPTIONS
@@ -659,8 +629,8 @@ type
  *)
   AAC_DRC_DEFAULT_PRESENTATION_MODE_OPTIONS = (
     AAC_DRC_PARAMETER_HANDLING_DISABLED = -1, (*!< DRC parameter handling
-                                                disabled, all parameters are
-                                                applied as requested. *)
+                                                 disabled, all parameters are
+                                                 applied as requested. *)
     AAC_DRC_PARAMETER_HANDLING_ENABLED =
         0, (*!< Apply changes to requested DRC parameters to prevent clipping. *)
     AAC_DRC_PRESENTATION_MODE_1_DEFAULT =
@@ -675,95 +645,89 @@ type
   AACDEC_PARAM = (
     AAC_PCM_DUAL_CHANNEL_OUTPUT_MODE =
         $0002, (*!< Defines how the decoder processes two channel signals: \n
-                    0: Leave both signals as they are (default). \n
-                    1: Create a dual mono output signal from channel 1. \n
-                    2: Create a dual mono output signal from channel 2. \n
-                    3: Create a dual mono output signal by mixing both channels
-                  (L' = R' = 0.5*Ch1 + 0.5*Ch2). *)
+                     0: Leave both signals as they are (default). \n
+                     1: Create a dual mono output signal from channel 1. \n
+                     2: Create a dual mono output signal from channel 2. \n
+                     3: Create a dual mono output signal by mixing both channels
+                   (L' = R' = 0.5*Ch1 + 0.5*Ch2). *)
     AAC_PCM_OUTPUT_CHANNEL_MAPPING =
         $0003, (*!< Output buffer channel ordering. 0: MPEG PCE style order, 1:
-                  WAV file channel order (default). *)
+                   WAV file channel order (default). *)
     AAC_PCM_LIMITER_ENABLE =
         $0004,                           (*!< Enable signal level limiting. \n
-                                              -1: Auto-config. Enable limiter for all
-                                            non-lowdelay configurations by default. \n
+                                               -1: Auto-config. Enable limiter for all
+                                             non-lowdelay configurations by default. \n
                                                 0: Disable limiter in general. \n
                                                 1: Enable limiter always.
-                                              It is recommended to call the decoder
-                                            with a AACDEC_CLRHIST flag to reset all
-                                            states when      the limiter switch is changed
-                                            explicitly. *)
+                                               It is recommended to call the decoder
+                                             with a AACDEC_CLRHIST flag to reset all
+                                             states when      the limiter switch is changed
+                                             explicitly. *)
     AAC_PCM_LIMITER_ATTACK_TIME = $0005, (*!< Signal level limiting attack time
-                                            in ms. Default configuration is 15
-                                            ms. Adjustable range from 1 ms to 15
-                                            ms. *)
+                                             in ms. Default configuration is 15
+                                             ms. Adjustable range from 1 ms to 15
+                                             ms. *)
     AAC_PCM_LIMITER_RELEAS_TIME = $0006, (*!< Signal level limiting release time
-                                            in ms. Default configuration is 50
-                                            ms. Adjustable time must be larger
-                                            than 0 ms. *)
+                                             in ms. Default configuration is 50
+                                             ms. Adjustable time must be larger
+                                             than 0 ms. *)
     AAC_PCM_MIN_OUTPUT_CHANNELS =
         $0011, (*!< Minimum number of PCM output channels. If higher than the
-                  number of encoded audio channels, a simple channel extension is
-                  applied (see note 4 for exceptions). \n -1, 0: Disable channel
-                  extension feature. The decoder output contains the same number
-                  of channels as the encoded bitstream. \n 1:    This value is
-                  currently needed only together with the mix-down feature. See
+                   number of encoded audio channels, a simple channel extension is
+                   applied (see note 4 for exceptions). \n -1, 0: Disable channel
+                   extension feature. The decoder output contains the same number
+                   of channels as the encoded bitstream. \n 1:    This value is
+                   currently needed only together with the mix-down feature. See
                             ::AAC_PCM_MAX_OUTPUT_CHANNELS and note 2 below. \n
                       2:    Encoded mono signals will be duplicated to achieve a
-                  2/0/0.0 channel output configuration. \n 6:    The decoder
-                  tries to reorder encoded signals with less than six channels to
-                  achieve a 3/0/2.1 channel output signal. Missing channels will
-                  be filled with a zero signal. If reordering is not possible the
-                  empty channels will simply be appended. Only available if
-                  instance is configured to support multichannel output. \n 8:
-                  The decoder tries to reorder encoded signals with less than
-                  eight channels to achieve a 3/0/4.1 channel output signal.
-                  Missing channels will be filled with a zero signal. If
-                  reordering is not possible the empty channels will simply be
+                   2/0/0.0 channel output configuration. \n 6:    The decoder
+                   tries to reorder encoded signals with less than six channels to
+                   achieve a 3/0/2.1 channel output signal. Missing channels will
+                   be filled with a zero signal. If reordering is not possible the
+                   empty channels will simply be appended. Only available if
+                   instance is configured to support multichannel output. \n 8:
+                   The decoder tries to reorder encoded signals with less than
+                   eight channels to achieve a 3/0/4.1 channel output signal.
+                   Missing channels will be filled with a zero signal. If
+                   reordering is not possible the empty channels will simply be
                             appended. Only available if instance is configured to
-                  support multichannel output.\n NOTE: \n
-                      1. The channel signaling (CStreamInfo::pChannelType and
-                  CStreamInfo::pChannelIndices) will not be modified. Added empty
-                  channels will be signaled with channel type
+                   support multichannel output.\n NOTE: \n
+                       1. The channel signaling (CStreamInfo::pChannelType and
+                   CStreamInfo::pChannelIndices) will not be modified. Added empty
+                   channels will be signaled with channel type
                           AUDIO_CHANNEL_TYPE::ACT_NONE. \n
-                      2. If the parameter value is greater than that of
-                  ::AAC_PCM_MAX_OUTPUT_CHANNELS both will be set to the same
-                  value. \n
-                      3. This parameter does not affect MPEG Surround processing.
-                  \n
-                      4. This parameter will be ignored if the number of encoded
-                  audio channels is greater than 8. *)
+                       2. If the parameter value is greater than that of
+                   ::AAC_PCM_MAX_OUTPUT_CHANNELS both will be set to the same
+                   value. \n
+                       3. This parameter will be ignored if the number of encoded
+                   audio channels is greater than 8. *)
     AAC_PCM_MAX_OUTPUT_CHANNELS =
         $0012, (*!< Maximum number of PCM output channels. If lower than the
-                  number of encoded audio channels, downmixing is applied
-                  accordingly (see note 5 for exceptions). If dedicated metadata
-                  is available in the stream it will be used to achieve better
-                  mixing results. \n -1, 0: Disable downmixing feature. The
-                  decoder output contains the same number of channels as the
-                  encoded bitstream. \n 1:    All encoded audio configurations
-                  with more than one channel will be mixed down to one mono
-                  output signal. \n 2:    The decoder performs a stereo mix-down
-                  if the number encoded audio channels is greater than two. \n 6:
-                  If the number of encoded audio channels is greater than six the
-                  decoder performs a mix-down to meet the target output
-                  configuration of 3/0/2.1 channels. Only available if instance
-                  is configured to support multichannel output. \n 8:    This
-                  value is currently needed only together with the channel
-                  extension feature. See ::AAC_PCM_MIN_OUTPUT_CHANNELS and note 2
-                  below. Only available if instance is configured to support
-                  multichannel output. \n NOTE: \n
-                      1. Down-mixing of any seven or eight channel configuration
-                  not defined in ISO/IEC 14496-3 PDAM 4 is not supported by this
-                  software version. \n
-                      2. If the parameter value is greater than zero but smaller
-                  than ::AAC_PCM_MIN_OUTPUT_CHANNELS both will be set to same
-                  value. \n
-                      3. The operating mode of the MPEG Surround module will be
-                  set accordingly. \n
-                      4. Setting this parameter with any value will disable the
-                  binaural processing of the MPEG Surround module
-                      5. This parameter will be ignored if the number of encoded
-                  audio channels is greater than 8. *)
+                   number of encoded audio channels, downmixing is applied
+                   accordingly (see note 5 for exceptions). If dedicated metadata
+                   is available in the stream it will be used to achieve better
+                   mixing results. \n -1, 0: Disable downmixing feature. The
+                   decoder output contains the same number of channels as the
+                   encoded bitstream. \n 1:    All encoded audio configurations
+                   with more than one channel will be mixed down to one mono
+                   output signal. \n 2:    The decoder performs a stereo mix-down
+                   if the number encoded audio channels is greater than two. \n 6:
+                   If the number of encoded audio channels is greater than six the
+                   decoder performs a mix-down to meet the target output
+                   configuration of 3/0/2.1 channels. Only available if instance
+                   is configured to support multichannel output. \n 8:    This
+                   value is currently needed only together with the channel
+                   extension feature. See ::AAC_PCM_MIN_OUTPUT_CHANNELS and note 2
+                   below. Only available if instance is configured to support
+                   multichannel output. \n NOTE: \n
+                       1. Down-mixing of any seven or eight channel configuration
+                   not defined in ISO/IEC 14496-3 PDAM 4 is not supported by this
+                   software version. \n
+                       2. If the parameter value is greater than zero but smaller
+                   than ::AAC_PCM_MIN_OUTPUT_CHANNELS both will be set to same
+                   value. \n
+                       3. This parameter will be ignored if the number of encoded
+                   audio channels is greater than 8. *)
     AAC_METADATA_PROFILE =
         $0020, (*!< See ::AAC_MD_PROFILE for all available values. *)
     AAC_METADATA_EXPIRY_TIME = $0021, (*!< Defines the time in ms after which all
@@ -781,66 +745,77 @@ type
                                     ::CONCEAL_INTER. only some AOTs are
                                     supported). \n *)
     AAC_DRC_BOOST_FACTOR =
-        $0200, (*!< Dynamic Range Control: Scaling factor for boosting gain
-                  values. Defines how the boosting DRC factors (conveyed in the
-                  bitstream) will be applied to the decoded signal. The valid
-                  values range from 0 (don't apply boost factors) to 127 (fully
-                    apply boost factors). Default value is 0. *)
-    AAC_DRC_ATTENUATION_FACTOR =
-        $0201, (*!< Dynamic Range Control: Scaling factor for attenuating gain
-                  values. Same as
-                    ::AAC_DRC_BOOST_FACTOR but for attenuating DRC factors. *)
+        $0200, (*!< MPEG-4 / MPEG-D Dynamic Range Control (DRC): Scaling factor
+                   for boosting gain values. Defines how the boosting DRC factors
+                   (conveyed in the bitstream) will be applied to the decoded
+                   signal. The valid values range from 0 (don't apply boost
+                   factors) to 127 (fully apply boost factors). Default value is 0
+                   for MPEG-4 DRC and 127 for MPEG-D DRC. *)
+    AAC_DRC_ATTENUATION_FACTOR = $0201, (*!< MPEG-4 / MPEG-D DRC: Scaling factor
+                                            for attenuating gain values. Same as
+                                              ::AAC_DRC_BOOST_FACTOR but for
+                                            attenuating DRC factors. *)
     AAC_DRC_REFERENCE_LEVEL =
-        $0202, (*!< Dynamic Range Control (DRC): Target reference level. Defines
-                  the level below full-scale (quantized in steps of 0.25dB) to
-                  which the output audio signal will be normalized to by the DRC
-                  module. The parameter controls loudness normalization for both
-                  MPEG-4 DRC and MPEG-D DRC. The valid values range from 40 (-10
-                  dBFS) to 127 (-31.75 dBFS). Any value smaller than 0 switches
-                  off loudness normalization and MPEG-4 DRC. By default, loudness
-                  normalization and MPEG-4 DRC is switched off. *)
+        $0202, (*!< MPEG-4 / MPEG-D DRC: Target reference level / decoder target
+                   loudness.\n Defines the level below full-scale (quantized in
+                   steps of 0.25dB) to which the output audio signal will be
+                   normalized to by the DRC module.\n The parameter controls
+                   loudness normalization for both MPEG-4 DRC and MPEG-D DRC. The
+                   valid values range from 40 (-10 dBFS) to 127 (-31.75 dBFS).\n
+                     Example values:\n
+                     124 (-31 dBFS) for audio/video receivers (AVR) or other
+                   devices allowing audio playback with high dynamic range,\n 96
+                   (-24 dBFS) for TV sets or equivalent devices (default),\n 64
+                   (-16 dBFS) for mobile devices where the dynamic range of audio
+                   playback is restricted.\n Any value smaller than 0 switches off
+                   loudness normalization and MPEG-4 DRC. *)
     AAC_DRC_HEAVY_COMPRESSION =
-        $0203, (*!< Dynamic Range Control: En-/Disable DVB specific heavy
-                  compression (aka RF mode). If set to 1, the decoder will apply
-                  the compression values from the DVB specific ancillary data
-                  field. At the same time the MPEG-4 Dynamic Range Control tool
-                  will be disabled. By default, heavy compression is disabled. *)
+        $0203, (*!< MPEG-4 DRC: En-/Disable DVB specific heavy compression (aka
+                   RF mode). If set to 1, the decoder will apply the compression
+                   values from the DVB specific ancillary data field. At the same
+                   time the MPEG-4 Dynamic Range Control tool will be disabled. By
+                     default, heavy compression is disabled. *)
     AAC_DRC_DEFAULT_PRESENTATION_MODE =
-        $0204, (*!< Dynamic Range Control: Default presentation mode (DRC
-                  parameter handling). \n Defines the handling of the DRC
-                  parameters boost factor, attenuation factor and heavy
-                  compression, if no presentation mode is indicated in the
-                  bitstream.\n For options, see
-                  ::AAC_DRC_DEFAULT_PRESENTATION_MODE_OPTIONS.\n Default:
-                  ::AAC_DRC_PARAMETER_HANDLING_DISABLED *)
+        $0204, (*!< MPEG-4 DRC: Default presentation mode (DRC parameter
+                   handling). \n Defines the handling of the DRC parameters boost
+                   factor, attenuation factor and heavy compression, if no
+                   presentation mode is indicated in the bitstream.\n For options,
+                   see ::AAC_DRC_DEFAULT_PRESENTATION_MODE_OPTIONS.\n Default:
+                   ::AAC_DRC_PARAMETER_HANDLING_DISABLED *)
     AAC_DRC_ENC_TARGET_LEVEL =
-        $0205, (*!< Dynamic Range Control: Encoder target level for light (i.e.
-                  not heavy) compression.\n If known, this declares the target
-                  reference level that was assumed at the encoder for calculation
-                    of limiting gains. The valid values range from 0 (full-scale)
-                  to 127 (31.75 dB below full-scale). This parameter is used only
-                  with ::AAC_DRC_PARAMETER_HANDLING_ENABLED and ignored
-                  otherwise.\n Default: 127 (worst-case assumption).\n *)
-    AAC_QMF_LOWPOWER = $0300, (*!< Quadrature Mirror Filter (QMF) Bank processing
-                                  mode. \n -1: Use internal default. Implies MPEG
-                                  Surround partially complex accordingly. \n 0:
-                                  Use complex QMF data mode. \n 1: Use real (low
-                                  power) QMF data mode. \n *)
+        $0205, (*!< MPEG-4 DRC: Encoder target level for light (i.e. not heavy)
+                   compression.\n If known, this declares the target reference
+                   level that was assumed at the encoder for calculation of
+                   limiting gains. The valid values range from 0 (full-scale) to
+                   127 (31.75 dB below full-scale). This parameter is used only
+                   with ::AAC_DRC_PARAMETER_HANDLING_ENABLED and ignored
+                   otherwise.\n Default: 127 (worst-case assumption).\n *)
+    AAC_UNIDRC_SET_EFFECT = $0206, (*!< MPEG-D DRC: Request a DRC effect type for
+                                       selection of a DRC set.\n Supported indices
+                                       are:\n -1: DRC off. Completely disables
+                                       MPEG-D DRC.\n 0: None (default). Disables
+                                       MPEG-D DRC, but automatically enables DRC
+                                       if necessary to prevent clipping.\n 1: Late
+                                       night\n 2: Noisy environment\n 3: Limited
+                                       playback range\n 4: Low playback level\n 5:
+                                       Dialog enhancement\n 6: General
+                                       compression. Used for generally enabling
+                                       MPEG-D DRC without particular request.\n *)
+    AAC_UNIDRC_ALBUM_MODE =
+        $0207, (*!<  MPEG-D DRC: Enable album mode. 0: Disabled (default), 1:
+                   Enabled.\n Disabled album mode leads to application of gain
+                   sequences for fading in and out, if provided in the
+                   bitstream.\n Enabled album mode makes use of dedicated album
+                   loudness information, if provided in the bitstream.\n *)
+    AAC_QMF_LOWPOWER =
+        $0300, (*!< Quadrature Mirror Filter (QMF) Bank processing mode. \n
+                     -1: Use internal default. \n
+                      0: Use complex QMF data mode. \n
+                      1: Use real (low power) QMF data mode. \n *)
     AAC_TPDEC_CLEAR_BUFFER =
-        $0603, (*!< Clear internal bit stream buffer of transport layers. The
+        $0603 (*!< Clear internal bit stream buffer of transport layers. The
                   decoder will start decoding at new data passed after this event
                   and any previous data is discarded. *)
-    AAC_UNIDRC_SET_EFFECT = $0903 (*!<  MPEG-D DRC: Request a DRC effect type for
-                                      selection of a DRC set.\n Supported indices
-                                      are:\n -1: DRC off. Completely disables
-                                      MPEG-D DRC.\n 0: None (default). Disables
-                                      MPEG-D DRC, but automatically enables DRC if
-                                      necessary to prevent clipping.\n 1: Late
-                                      night\n 2: Noisy environment\n 3: Limited
-                                      playback range\n 4: Low playback level\n 5:
-                                      Dialog enhancement\n 6: General compression.
-                                      Used for generally enabling MPEG-D DRC
-                                      without particular request.\n *)
 
   );
 
@@ -851,92 +826,98 @@ type
   PCStreamInfo = ^TCStreamInfo;
   TCStreamInfo = record
     (* These five members are the only really relevant ones for the user. *)
-    sampleRate : Integer; (*!< The sample rate in Hz of the decoded PCM audio signal. *)
-    frameSize : Integer;  (*!< The frame size of the decoded PCM audio signal. \n
-                        Typically this is: \n
-                        1024 or 960 for AAC-LC \n
-                        2048 or 1920 for HE-AAC (v2) \n
-                        512 or 480 for AAC-LD and AAC-ELD \n
-                        768, 1024, 2048 or 4096 for USAC  *)
-    numChannels : Integer; (*!< The number of output audio channels before the rendering
+    sampleRate: Integer; (*!< The sample rate in Hz of the decoded PCM audio signal. *)
+    frameSize: Integer;  (*!< The frame size of the decoded PCM audio signal. \n
+                         Typically this is: \n
+                         1024 or 960 for AAC-LC \n
+                         2048 or 1920 for HE-AAC (v2) \n
+                         512 or 480 for AAC-LD and AAC-ELD \n
+                         768, 1024, 2048 or 4096 for USAC  *)
+    numChannels: Integer; (*!< The number of output audio channels before the rendering
                         module, i.e. the original channel configuration. *)
-    
-    pChannelType : array of AUDIO_CHANNEL_TYPE; (*!< Audio channel type of each output audio channel. *)
-    pChannelIndices : array of Byte; (*!< Audio channel index for each output audio
-                              channel. See ISO/IEC 13818-7:2005(E), 8.5.3.2
-                              Explicit channel mapping using a
-                              program_config_element() *)
+    pChannelType: array of AUDIO_CHANNEL_TYPE; (*!< Audio channel type of each output audio channel. *)
+    pChannelIndices: array of Byte; (*!< Audio channel index for each output audio
+                               channel. See ISO/IEC 13818-7:2005(E), 8.5.3.2
+                               Explicit channel mapping using a
+                               program_config_element() *)
     (* Decoder internal members. *)
-    aacSampleRate : Integer; (*!< Sampling rate in Hz without SBR (from configuration
+    aacSampleRate: Integer; (*!< Sampling rate in Hz without SBR (from configuration
                           info) divided by a (ELD) downscale factor if present. *)
-    profile : Integer; (*!< MPEG-2 profile (from file header) (-1: not applicable (e. g.
+    profile: Integer; (*!< MPEG-2 profile (from file header) (-1: not applicable (e. g.
                     MPEG-4)).               *)
-    
-    aot : AUDIO_OBJECT_TYPE; (*!< Audio Object Type (from ASC): is set to the appropriate value
+    aot: AUDIO_OBJECT_TYPE; (*!< Audio Object Type (from ASC): is set to the appropriate value
             for MPEG-2 bitstreams (e. g. 2 for AAC-LC). *)
-    channelConfig : Integer; (*!< Channel configuration (0: PCE defined, 1: mono, 2:
+    channelConfig: Integer; (*!< Channel configuration (0: PCE defined, 1: mono, 2:
                           stereo, ...                       *)
-    bitRate : Integer;       (*!< Instantaneous bit rate.                   *)
-    aacSamplesPerFrame : Integer;   (*!< Samples per frame for the AAC core (from ASC)
-                                divided by a (ELD) downscale factor if present. \n
-                                  Typically this is (with a downscale factor of 1):
-                                \n   1024 or 960 for AAC-LC \n   512 or 480 for
-                                AAC-LD   and AAC-ELD         *)
-    aacNumChannels : Integer;       (*!< The number of audio channels after AAC core
-                                processing (before PS or MPS processing).       CAUTION: This
-                                are not the final number of output channels! *)
-    extAot : AUDIO_OBJECT_TYPE; (*!< Extension Audio Object Type (from ASC)   *)
-    extSamplingRate : Integer; (*!< Extension sampling rate in Hz (from ASC) divided by
+    bitRate: Integer;       (*!< Instantaneous bit rate.                   *)
+    aacSamplesPerFrame: Integer;   (*!< Samples per frame for the AAC core (from ASC)
+                                 divided by a (ELD) downscale factor if present. \n
+                                   Typically this is (with a downscale factor of 1):
+                                 \n   1024 or 960 for AAC-LC \n   512 or 480 for
+                                 AAC-LD   and AAC-ELD         *)
+    aacNumChannels: Integer;       (*!< The number of audio channels after AAC core
+                                 processing (before PS or MPS processing).       CAUTION: This
+                                 are not the final number of output channels! *)
+    extAot: AUDIO_OBJECT_TYPE; (*!< Extension Audio Object Type (from ASC)   *)
+    extSamplingRate: Integer; (*!< Extension sampling rate in Hz (from ASC) divided by
                             a (ELD) downscale factor if present. *)
 
-    outputDelay : Cardinal; (*!< The number of samples the output is additionally
-                        delayed by.the decoder. *)
-    flags : Cardinal; (*!< Copy of internal flags. Only to be written by the decoder,
-                  and only to be read externally. *)
+    outputDelay: Cardinal; (*!< The number of samples the output is additionally
+                         delayed by.the decoder. *)
+    flags: Cardinal; (*!< Copy of internal flags. Only to be written by the decoder,
+                   and only to be read externally. *)
 
-    epConfig : ShortInt; (*!< epConfig level (from ASC): only level 0 supported, -1
-                      means no ER (e. g. AOT=2, MPEG-2 AAC, etc.)  *)
+    epConfig: ShortInt; (*!< epConfig level (from ASC): only level 0 supported, -1
+                       means no ER (e. g. AOT=2, MPEG-2 AAC, etc.)  *)
     (* Statistics *)
-    numLostAccessUnits : Integer; (*!< This integer will reflect the estimated amount of
-                              lost access units in case aacDecoder_DecodeFrame()
-                                returns AAC_DEC_TRANSPORT_SYNC_ERROR. It will be
-                              < 0 if the estimation failed. *)
+    numLostAccessUnits: Integer; (*!< This integer will reflect the estimated amount of
+                               lost access units in case aacDecoder_DecodeFrame()
+                                 returns AAC_DEC_TRANSPORT_SYNC_ERROR. It will be
+                               < 0 if the estimation failed. *)
 
-    numTotalBytes : Int64; (*!< This is the number of total bytes that have passed
+    numTotalBytes: Int64; (*!< This is the number of total bytes that have passed
                             through the decoder. *)
-    numBadBytes : Int64; (*!< This is the number of total bytes that were considered
+    numBadBytes: Int64; (*!< This is the number of total bytes that were considered
                     with errors from numTotalBytes. *)
-    numTotalAccessUnits : Int64;     (*!< This is the number of total access units that
+    numTotalAccessUnits: Int64;     (*!< This is the number of total access units that
                                 have passed through the decoder. *)
-    numBadAccessUnits : Int64; (*!< This is the number of total access units that
+    numBadAccessUnits: Int64; (*!< This is the number of total access units that
                                 were considered with errors from numTotalBytes. *)
 
     (* Metadata *)
-    drcProgRefLev : ShortInt; (*!< DRC program reference level. Defines the reference
+    drcProgRefLev: ShortInt; (*!< DRC program reference level. Defines the reference
                             level below full-scale. It is quantized in steps of
                             0.25dB. The valid values range from 0 (0 dBFS) to 127
                             (-31.75 dBFS). It is used to reflect the average
                             loudness of the audio in LKFS according to ITU-R BS
                             1770. If no level has been found in the bitstream the
                             value is -1. *)
-    
-    drcPresMode : ShortInt; (*!< DRC presentation mode. According to ETSI TS 101 154,
-                    this field indicates whether   light (MPEG-4 Dynamic Range
-                    Control tool) or heavy compression (DVB heavy
-                    compression)   dynamic range control shall take priority
-                    on the outputs.   For details, see ETSI TS 101 154, table
-                    C.33. Possible values are: \n   -1: No corresponding
-                    metadata found in the bitstream \n   0: DRC presentation
-                    mode not indicated \n   1: DRC presentation mode 1 \n   2:
-                    DRC presentation mode 2 \n   3: Reserved *)
+    drcPresMode: ShortInt;        (*!< DRC presentation mode. According to ETSI TS 101 154,
+                           this field indicates whether   light (MPEG-4 Dynamic Range
+                           Control tool) or heavy compression (DVB heavy
+                           compression)   dynamic range control shall take priority
+                           on the outputs.   For details, see ETSI TS 101 154, table
+                           C.33. Possible values are: \n   -1: No corresponding
+                           metadata found in the bitstream \n   0: DRC presentation
+                           mode not indicated \n   1: DRC presentation mode 1 \n   2:
+                           DRC presentation mode 2 \n   3: Reserved *)
+    outputLoudness: Integer; (*!< Audio output loudness in steps of -0.25 dB. Range: 0
+                           (0 dBFS) to 231 (-57.75 dBFS).\n  A value of -1
+                           indicates that no loudness metadata is present.\n  If
+                           loudness normalization is active, the value corresponds
+                           to the target loudness value set with
+                           ::AAC_DRC_REFERENCE_LEVEL.\n  If loudness normalization
+                           is not active, the output loudness value corresponds to
+                           the loudness metadata given in the bitstream.\n
+                             Loudness metadata can originate from MPEG-4 DRC or
+                           MPEG-D DRC. *)
 
   end;
 
-  HANDLE_AACDECODER = ^TAAC_DECODER_INSTANCE;
-  TAAC_DECODER_INSTANCE = record
+  HANDLE_AACDECODER = ^AAC_DECODER_INSTANCE;
+  AAC_DECODER_INSTANCE = record
     HANDLE_AACDECODER : Pointer; (*!< Pointer to a AAC decoder instance. *)
   end;
-
 
 (**
  * \brief Initialize ancillary data buffer.
@@ -1012,7 +993,6 @@ function aacDecoder_Open(transportFmt: TRANSPORT_TYPE;
  * \param length  Length of the configuration buffer in bytes.
  * \return        Error code.
  *)
-
 function aacDecoder_ConfigRaw(self: HANDLE_AACDECODER;
                                                   conf: Pointer;
                                                   const length: PCardinal): AAC_DECODER_ERROR;
@@ -1058,26 +1038,29 @@ function aacDecoder_RawISOBMFFData(self: HANDLE_AACDECODER;
  *)
 function aacDecoder_Fill(self: HANDLE_AACDECODER;
                                              pBuffer: PByte;
-                                             const bufferSize: PCardinal;
+                                             var bufferSize: Cardinal;
                                              var bytesValid: Cardinal): AAC_DECODER_ERROR;
  cdecl; external libfdk_aac name _PU + 'aacDecoder_Fill';
 
 const
-  AACDEC_CONCEAL =                                                       
-    1; (*!< Flag for aacDecoder_DecodeFrame(): Trigger the built-in error        \
-        concealment module to generate a substitute signal for one lost frame. \
-        New input data will not be considered. *)
-  AACDEC_FLUSH =                                                        
-    2; (*!< Flag for aacDecoder_DecodeFrame(): Flush all filterbanks to get all \
-        delayed audio without having new input data. Thus new input data will \
-        not be considered.*)
-  AACDEC_INTR =                                                        
-    4; (*!< Flag for aacDecoder_DecodeFrame(): Signal an input bit stream data \
-        discontinuity. Resync any internals as necessary. *)
-  AACDEC_CLRHIST =                                                       
-    8; (*!< Flag for aacDecoder_DecodeFrame(): Clear all signal delay lines and  \
-        history buffers. CAUTION: This can cause discontinuities in the output \
-        signal. *)
+  (** Flag for aacDecoder_DecodeFrame(): Trigger the built-in error concealment
+   * module to generate a substitute signal for one lost frame. New input data
+   * will not be considered.
+   *)
+  AACDEC_CONCEAL = 1;
+  (** Flag for aacDecoder_DecodeFrame(): Flush all filterbanks to get all delayed
+   * audio without having new input data. Thus new input data will not be
+   * considered.
+   *)
+  AACDEC_FLUSH = 2;
+  (** Flag for aacDecoder_DecodeFrame(): Signal an input bit stream data
+   * discontinuity. Resync any internals as necessary.
+   *)
+  AACDEC_INTR = 4;
+  (** Flag for aacDecoder_DecodeFrame(): Clear all signal delay lines and history
+   * buffers. CAUTION: This can cause discontinuities in the output signal.
+   *)
+  AACDEC_CLRHIST = 8;
 
 (**
  * \brief               Decode one audio frame
@@ -1131,3 +1114,4 @@ function aacDecoder_GetLibInfo(var info: array of LIB_INFO): Integer;
 implementation
 
 end.
+

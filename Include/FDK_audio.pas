@@ -113,6 +113,7 @@ interface
 uses
   System.SysUtils;
 
+
 type
   (**
    * File format identifiers.
@@ -146,11 +147,9 @@ type
     TT_DRM = 12 (**< Digital Radio Mondial (DRM30/DRM+) bitstream format. *)
   );
 
-  (*
-  #define TT_IS_PACKET(x)                                                   \
-    (((x) == TT_MP4_RAW) || ((x) == TT_DRM) || ((x) == TT_MP4_LATM_MCP0) || \
-     ((x) == TT_MP4_LATM_MCP1))
-  *)
+  //TT_IS_PACKET(x)                                                   \
+  //  (((x) == TT_MP4_RAW) || ((x) == TT_DRM) || ((x) == TT_MP4_LATM_MCP0) || \
+  //   ((x) == TT_MP4_LATM_MCP1))
   function TT_IS_PACKET(x: TRANSPORT_TYPE): boolean;
 
 type
@@ -219,21 +218,15 @@ type
     AOT_DRM_USAC = 147 (**< Virtual AOT for DRM with USAC *)
   );
 
-  (*
-  #define CAN_DO_PS(aot)                                           \
-    ((aot) == AOT_AAC_LC || (aot) == AOT_SBR || (aot) == AOT_PS || \
-     (aot) == AOT_ER_BSAC || (aot) == AOT_DRM_AAC)
-  *)
+  //CAN_DO_PS(aot)                                           \
+  //  ((aot) == AOT_AAC_LC || (aot) == AOT_SBR || (aot) == AOT_PS || \
+  //   (aot) == AOT_ER_BSAC || (aot) == AOT_DRM_AAC)
   function CAN_DO_PS(aot: AUDIO_OBJECT_TYPE): boolean;
 
-  (*
-  #define IS_USAC(aot) ((aot) == AOT_USAC)
-  *)
+  //IS_USAC(aot) ((aot) == AOT_USAC)
   function IS_USAC(aot: AUDIO_OBJECT_TYPE): boolean;
 
-  (*
-  #define IS_LOWDELAY(aot) ((aot) == AOT_ER_AAC_LD || (aot) == AOT_ER_AAC_ELD)
-  *)
+  //IS_LOWDELAY(aot) ((aot) == AOT_ER_AAC_LD || (aot) == AOT_ER_AAC_ELD)
   function IS_LOWDELAY(aot: AUDIO_OBJECT_TYPE): boolean;
 
 type
@@ -274,14 +267,14 @@ type
     ACT_BACK = $03,  (*!< Back speaker position (at normal height) *)
     ACT_LFE = $04,   (*!< Low frequency effect speaker postion (front) *)
 
-    ACT_TOP =
-        $10, (*!< Top speaker area (for combination with speaker positions) *)
+    ACT_TOP
+        = $10, (*!< Top speaker area (for combination with speaker positions) *)
     ACT_FRONT_TOP = $11, (*!< Top front speaker = (ACT_FRONT|ACT_TOP) *)
     ACT_SIDE_TOP = $12,  (*!< Top side speaker  = (ACT_SIDE |ACT_TOP) *)
     ACT_BACK_TOP = $13,  (*!< Top back speaker  = (ACT_BACK |ACT_TOP) *)
 
-    ACT_BOTTOM =
-        $20, (*!< Bottom speaker area (for combination with speaker positions) *)
+    ACT_BOTTOM
+        = $20, (*!< Bottom speaker area (for combination with speaker positions) *)
     ACT_FRONT_BOTTOM = $21, (*!< Bottom front speaker = (ACT_FRONT|ACT_BOTTOM) *)
     ACT_SIDE_BOTTOM = $22,  (*!< Bottom side speaker  = (ACT_SIDE |ACT_BOTTOM) *)
     ACT_BACK_BOTTOM = $23   (*!< Bottom back speaker  = (ACT_BACK |ACT_BOTTOM) *)
@@ -298,30 +291,30 @@ const
   (**
    * Audio Codec flags.
    *)
-  AC_ER_VCB11 =
-    $000001; (*!< aacSectionDataResilienceFlag     flag (from ASC): 1 means use \
+  AC_ER_VCB11
+    = $000001; (*!< aacSectionDataResilienceFlag     flag (from ASC): 1 means use
                 virtual codebooks  *)
-  AC_ER_RVLC =
-    $000002; (*!< aacSpectralDataResilienceFlag     flag (from ASC): 1 means use \
+  AC_ER_RVLC
+    = $000002; (*!< aacSpectralDataResilienceFlag     flag (from ASC): 1 means use
                 huffman codeword reordering *)
-  AC_ER_HCR =
-    $000004; (*!< aacSectionDataResilienceFlag     flag (from ASC): 1 means use \
+  AC_ER_HCR
+    = $000004; (*!< aacSectionDataResilienceFlag     flag (from ASC): 1 means use
                 virtual codebooks  *)
   AC_SCALABLE = $000008;    (*!< AAC Scalable*)
   AC_ELD = $000010;         (*!< AAC-ELD *)
   AC_LD = $000020;          (*!< AAC-LD *)
-  AC_ER = $000040;          (*!< ER syntax *)
-  AC_BSAC = $000080;       (*!< BSAC *)
+  AC_ER = $000040;         (*!< ER syntax *)
+  AC_BSAC = $000080;        (*!< BSAC *)
   AC_USAC = $000100;        (*!< USAC *)
-  AC_RSV603DA = $000200;    (*!< RSVD60 3D audio *)
+  AC_RSV603DA = $000200;   (*!< RSVD60 3D audio *)
   AC_HDAAC = $000400;       (*!< HD-AAC *)
   AC_RSVD50 = $004000;      (*!< Rsvd50 *)
   AC_SBR_PRESENT = $008000; (*!< SBR present flag (from ASC) *)
-  AC_SBRCRC  =
-    $010000; (*!< SBR CRC present flag. Only relevant for AAC-ELD for now. *)
+  AC_SBRCRC
+    = $010000; (*!< SBR CRC present flag. Only relevant for AAC-ELD for now. *)
   AC_PS_PRESENT = $020000; (*!< PS present flag (from ASC or implicit)  *)
-  AC_MPS_PRESENT =
-    $040000;                    (*!< MPS present flag (from ASC or implicit) \
+  AC_MPS_PRESENT
+    = $040000;                    (*!< MPS present flag (from ASC or implicit)
                                  *)
   AC_DRM = $080000;       (*!< DRM bit stream syntax *)
   AC_INDEP = $100000;     (*!< Independency flag *)
@@ -330,19 +323,19 @@ const
   AC_DAB = $800000;            (*!< DAB bit stream syntax *)
   AC_ELD_DOWNSCALE = $1000000; (*!< ELD Downscaled playout *)
   AC_LD_MPS = $2000000;        (*!< Low Delay MPS. *)
-  AC_DRC_PRESENT =
-    $4000000; (*!< Dynamic Range Control (DRC) data found. \
+  AC_DRC_PRESENT
+    = $4000000; (*!< Dynamic Range Control (DRC) data found.
                *)
-  AC_USAC_SCFGI3 =
-    $8000000; (*!< USAC flag: If stereoConfigIndex is 3 the flag is set. *)
+  AC_USAC_SCFGI3
+    = $8000000; (*!< USAC flag: If stereoConfigIndex is 3 the flag is set. *)
   (**
    * Audio Codec flags (reconfiguration).
    *)
-  AC_CM_DET_CFG_CHANGE =
-    $000001; (*!< Config mode signalizes the callback to work in config change \
+  AC_CM_DET_CFG_CHANGE
+    = $000001; (*!< Config mode signalizes the callback to work in config change
                 detection mode *)
-  AC_CM_ALLOC_MEM =
-    $000002; (*!< Config mode signalizes the callback to work in memory \
+  AC_CM_ALLOC_MEM
+    = $000002; (*!< Config mode signalizes the callback to work in memory
                 allocation mode *)
 
   (**
@@ -351,10 +344,12 @@ const
   AC_EL_USAC_TW = $000001;    (*!< USAC time warped filter bank is active *)
   AC_EL_USAC_NOISE = $000002; (*!< USAC noise filling is active *)
   AC_EL_USAC_ITES = $000004;  (*!< USAC SBR inter-TES tool is active *)
-  AC_EL_USAC_PVC = $000008; (*!< USAC SBR predictive vector coding tool is active *)
+  AC_EL_USAC_PVC
+    = $000008; (*!< USAC SBR predictive vector coding tool is active *)
   AC_EL_USAC_MPS212 = $000010; (*!< USAC MPS212 tool is active *)
   AC_EL_USAC_LFE = $000020;    (*!< USAC element is LFE *)
-  AC_EL_USAC_CP_POSSIBLE = $000040; (*!< USAC may use Complex Stereo Prediction in this channel element \
+  AC_EL_USAC_CP_POSSIBLE
+    = $000040; (*!< USAC may use Complex Stereo Prediction in this channel element
               *)
   AC_EL_ENHANCED_NOISE = $000080;   (*!< Enhanced noise filling*)
   AC_EL_IGF_AFTER_TNS = $000100;    (*!< IGF after TNS *)
@@ -380,7 +375,7 @@ const
   CC_USAC_HBE = $40000000;
 
 type
-(** Generic audio coder configuration structure. *)
+  (** Generic audio coder configuration structure. *)
   TCODER_CONFIG = record
     aot: AUDIO_OBJECT_TYPE;     (**< Audio Object Type (AOT).           *)
     extAOT: AUDIO_OBJECT_TYPE;  (**< Extension Audio Object Type (SBR). *)
@@ -419,7 +414,7 @@ type
 
     sbrPresent: Byte;
     psPresent: Byte;
-  end;
+	end;
 
 const
   USAC_ID_BIT = 16; (** USAC element IDs start at USAC_ID_BIT *)
@@ -464,20 +459,15 @@ type
     (* > 128 => reserved for use outside of ISO scope *)
   );
 
-(*
-#define IS_CHANNEL_ELEMENT(elementId)                                         \
-  ((elementId) == ID_SCE || (elementId) == ID_CPE || (elementId) == ID_LFE || \
-   (elementId) == ID_USAC_SCE || (elementId) == ID_USAC_CPE ||                \
-   (elementId) == ID_USAC_LFE)
-*)
-function IS_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  //IS_CHANNEL_ELEMENT(elementId)                                         \
+  //  ((elementId) == ID_SCE || (elementId) == ID_CPE || (elementId) == ID_LFE || \
+  //   (elementId) == ID_USAC_SCE || (elementId) == ID_USAC_CPE ||                \
+  //   (elementId) == ID_USAC_LFE)
+  function IS_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
 
-(*
-#define IS_MP4_CHANNEL_ELEMENT(elementId) \
-  ((elementId) == ID_SCE || (elementId) == ID_CPE || (elementId) == ID_LFE)
-
-*)
-function IS_MP4_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  //IS_MP4_CHANNEL_ELEMENT(elementId) \
+  //  ((elementId) == ID_SCE || (elementId) == ID_CPE || (elementId) == ID_LFE)
+  function IS_MP4_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
 
 const
   EXT_ID_BITS = 4; (**< Size in bits of extension payload type tags. *)
@@ -498,12 +488,10 @@ type
     EXT_SBR_DATA_CRC = $0e
   );
 
-(*
-#define IS_USAC_CHANNEL_ELEMENT(elementId)                     \
-  ((elementId) == ID_USAC_SCE || (elementId) == ID_USAC_CPE || \
-   (elementId) == ID_USAC_LFE)
-*)
-function IS_USAC_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  //IS_USAC_CHANNEL_ELEMENT(elementId)                     \
+  //  ((elementId) == ID_USAC_SCE || (elementId) == ID_USAC_CPE || \
+  //   (elementId) == ID_USAC_LFE)
+  function IS_USAC_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
 
 type
   (** MPEG-D USAC & RSVD60 3D audio Extension Element Types. *)
@@ -534,6 +522,7 @@ type
     TC_RAW_ADTS = 2, (* Transfer type is ADTS. *)
     TC_RAW_LATM_MCP1 = 6, (* Transfer type is LATM with SMC present.    *)
     TC_RAW_SDC = 21       (* Configuration data field is Drm SDC.             *)
+
   );
 
   (*
@@ -544,183 +533,169 @@ type
   (* \cond *)
 
   FDK_MODULE_ID = (
-    FDK_NONE   = 0,
-    FDK_TOOLS  = 1,
+    FDK_NONE = 0,
+    FDK_TOOLS = 1,
     FDK_SYSLIB = 2,
     FDK_AACDEC = 3,
     FDK_AACENC = 4,
     FDK_SBRDEC = 5,
     FDK_SBRENC = 6,
-    FDK_TPDEC  = 7,
-    FDK_TPENC  = 8,
+    FDK_TPDEC = 7,
+    FDK_TPENC = 8,
     FDK_MPSDEC = 9,
-    FDK_MPEGFILEREAD  = 10,
+    FDK_MPEGFILEREAD = 10,
     FDK_MPEGFILEWRITE = 11,
-    FDK_MP2DEC = 12,
-    FDK_DABDEC = 13,
-    FDK_DABPARSE = 14,
-    FDK_DRMDEC = 15,
-    FDK_DRMPARSE = 16,
-    FDK_AACLDENC = 17,
-    FDK_MP2ENC = 18,
-    FDK_MP3ENC = 19,
-    FDK_MP3DEC = 20,
-    FDK_MP3HEADPHONE = 21,
-    FDK_MP3SDEC = 22,
-    FDK_MP3SENC = 23,
-    FDK_EAEC    = 24,
-    FDK_DABENC  = 25,
-    FDK_DMBDEC  = 26,
-    FDK_FDREVERB = 27,
-    FDK_DRMENC  = 28,
-    FDK_METADATATRANSCODER = 29,
-    FDK_AC3DEC = 30,
     FDK_PCMDMX = 31,
+    FDK_MPSENC = 34,
+    FDK_TDLIMIT = 35,
+    FDK_UNIDRCDEC = 38,
 
     FDK_MODULE_LAST
+
   );
 
-(* AAC capability flags *)
 const
+  (* AAC capability flags *)
   CAPF_AAC_LC = $00000001; (**< Support flag for AAC Low Complexity. *)
-  CAPF_ER_AAC_LD =
-    $00000002; (**< Support flag for AAC Low Delay with Error Resilience tools. \
+  CAPF_ER_AAC_LD
+    = $00000002; (**< Support flag for AAC Low Delay with Error Resilience tools.
                 *)
   CAPF_ER_AAC_SCAL = $00000004; (**< Support flag for AAC Scalable. *)
-  CAPF_ER_AAC_LC =
-    $00000008; (**< Support flag for AAC Low Complexity with Error Resilience \
+  CAPF_ER_AAC_LC
+    = $00000008; (**< Support flag for AAC Low Complexity with Error Resilience
                   tools. *)
-  CAPF_AAC_480 =
-    $00000010; (**< Support flag for AAC with 480 framelength.  *)
-  CAPF_AAC_512 =
-    $00000020; (**< Support flag for AAC with 512 framelength.  *)
-  CAPF_AAC_960 =
-    $00000040; (**< Support flag for AAC with 960 framelength.  *)
-  CAPF_AAC_1024 =
-    $00000080; (**< Support flag for AAC with 1024 framelength. *)
-  CAPF_AAC_HCR =
-    $00000100; (**< Support flag for AAC with Huffman Codeword Reordering.    *)
-  CAPF_AAC_VCB11 =
-    $00000200; (**< Support flag for AAC Virtual Codebook 11.    *)
-  CAPF_AAC_RVLC =
-    $00000400; (**< Support flag for AAC Reversible Variable Length Coding.   *)
-  CAPF_AAC_MPEG4 = $00000800; (**< Support flag for MPEG file format. *)
-  CAPF_AAC_DRC =
-    $00001000; (**< Support flag for AAC Dynamic Range Control. *)
-  CAPF_AAC_CONCEALMENT =
-    $00002000; (**< Support flag for AAC concealment.           *)
-  CAPF_AAC_DRM_BSFORMAT =
-    $00004000; (**< Support flag for AAC DRM bistream format. *)
-  CAPF_ER_AAC_ELD =
-    $00008000; (**< Support flag for AAC Enhanced Low Delay with Error \
+  CAPF_AAC_480
+    = $00000010; (**< Support flag for AAC with 480 framelength.  *)
+  CAPF_AAC_512
+    = $00000020; (**< Support flag for AAC with 512 framelength.  *)
+  CAPF_AAC_960
+    = $00000040; (**< Support flag for AAC with 960 framelength.  *)
+  CAPF_AAC_1024
+    = $00000080; (**< Support flag for AAC with 1024 framelength. *)
+  CAPF_AAC_HCR
+    = $00000100; (**< Support flag for AAC with Huffman Codeword Reordering.    *)
+  CAPF_AAC_VCB11
+    = $00000200; (**< Support flag for AAC Virtual Codebook 11.    *)
+  CAPF_AAC_RVLC
+    = $00000400; (**< Support flag for AAC Reversible Variable Length Coding.   *)
+  CAPF_AAC_MPEG4
+    = $00000800; (**< Support flag for MPEG file format. *)
+  CAPF_AAC_DRC
+    = $00001000; (**< Support flag for AAC Dynamic Range Control. *)
+  CAPF_AAC_CONCEALMENT
+    = $00002000; (**< Support flag for AAC concealment.           *)
+  CAPF_AAC_DRM_BSFORMAT
+    = $00004000; (**< Support flag for AAC DRM bistream format. *)
+  CAPF_ER_AAC_ELD
+    = $00008000; (**< Support flag for AAC Enhanced Low Delay with Error
                   Resilience tools.  *)
-  CAPF_ER_AAC_BSAC =
-    $00010000; (**< Support flag for AAC BSAC.                           *)
-  CAPF_AAC_ELD_DOWNSCALE =
-    $00040000; (**< Support flag for AAC-ELD Downscaling           *)
-  CAPF_AAC_USAC_LP =
-    $00100000; (**< Support flag for USAC low power mode. *)
-  CAPF_AAC_USAC =
-    $00200000; (**< Support flag for Unified Speech and Audio Coding (USAC). *)
-  CAPF_ER_AAC_ELDV2 =
-    $00800000; (**< Support flag for AAC Enhanced Low Delay with MPS 212.  *)
-  CAPF_AAC_UNIDRC =
-    $01000000; (**< Support flag for MPEG-D Dynamic Range Control (uniDrc). *)
+  CAPF_ER_AAC_BSAC
+    = $00010000; (**< Support flag for AAC BSAC.                           *)
+  CAPF_AAC_ELD_DOWNSCALE
+    = $00040000; (**< Support flag for AAC-ELD Downscaling           *)
+  CAPF_AAC_USAC_LP
+    = $00100000; (**< Support flag for USAC low power mode. *)
+  CAPF_AAC_USAC
+    = $00200000; (**< Support flag for Unified Speech and Audio Coding (USAC). *)
+  CAPF_ER_AAC_ELDV2
+    = $00800000; (**< Support flag for AAC Enhanced Low Delay with MPS 212.  *)
+  CAPF_AAC_UNIDRC
+    = $01000000; (**< Support flag for MPEG-D Dynamic Range Control (uniDrc). *)
 
   (* Transport capability flags *)
-  CAPF_ADTS =
-    $00000001; (**< Support flag for ADTS transport format.        *)
-  CAPF_ADIF =
-    $00000002; (**< Support flag for ADIF transport format.        *)
-  CAPF_LATM =
-    $00000004; (**< Support flag for LATM transport format.        *)
-  CAPF_LOAS =
-    $00000008; (**< Support flag for LOAS transport format.        *)
-  CAPF_RAWPACKETS =
-    $00000010; (**< Support flag for RAW PACKETS transport format. *)
-  CAPF_DRM =
-    $00000020; (**< Support flag for DRM/DRM+ transport format.    *)
-  CAPF_RSVD50 =
-    $00000040; (**< Support flag for RSVD50 transport format       *)
+  CAPF_ADTS
+    = $00000001; (**< Support flag for ADTS transport format.        *)
+  CAPF_ADIF
+    = $00000002; (**< Support flag for ADIF transport format.        *)
+  CAPF_LATM
+    = $00000004; (**< Support flag for LATM transport format.        *)
+  CAPF_LOAS
+    = $00000008; (**< Support flag for LOAS transport format.        *)
+  CAPF_RAWPACKETS
+    = $00000010; (**< Support flag for RAW PACKETS transport format. *)
+  CAPF_DRM
+    = $00000020; (**< Support flag for DRM/DRM+ transport format.    *)
+  CAPF_RSVD50
+    = $00000040; (**< Support flag for RSVD50 transport format       *)
 
   (* SBR capability flags *)
-  CAPF_SBR_LP =
-    $00000001; (**< Support flag for SBR Low Power mode.           *)
-  CAPF_SBR_HQ =
-    $00000002; (**< Support flag for SBR High Quality mode.        *)
-  CAPF_SBR_DRM_BS =
-    $00000004; (**< Support flag for                               *)
-  CAPF_SBR_CONCEALMENT =
-    $00000008; (**< Support flag for SBR concealment.              *)
-  CAPF_SBR_DRC =
-    $00000010; (**< Support flag for SBR Dynamic Range Control.    *)
-  CAPF_SBR_PS_MPEG =
-    $00000020; (**< Support flag for MPEG Parametric Stereo.       *)
-  CAPF_SBR_PS_DRM =
-    $00000040; (**< Support flag for DRM Parametric Stereo.        *)
-  CAPF_SBR_ELD_DOWNSCALE =
-    $00000080; (**< Support flag for ELD reduced delay mode        *)
-  CAPF_SBR_HBEHQ =
-    $00000100; (**< Support flag for HQ HBE                        *)
+  CAPF_SBR_LP
+    = $00000001; (**< Support flag for SBR Low Power mode.           *)
+  CAPF_SBR_HQ
+    = $00000002; (**< Support flag for SBR High Quality mode.        *)
+  CAPF_SBR_DRM_BS
+    = $00000004; (**< Support flag for                               *)
+  CAPF_SBR_CONCEALMENT
+    = $00000008; (**< Support flag for SBR concealment.              *)
+  CAPF_SBR_DRC
+    = $00000010; (**< Support flag for SBR Dynamic Range Control.    *)
+  CAPF_SBR_PS_MPEG
+    = $00000020; (**< Support flag for MPEG Parametric Stereo.       *)
+  CAPF_SBR_PS_DRM
+    = $00000040; (**< Support flag for DRM Parametric Stereo.        *)
+  CAPF_SBR_ELD_DOWNSCALE
+    = $00000080; (**< Support flag for ELD reduced delay mode        *)
+  CAPF_SBR_HBEHQ
+    = $00000100; (**< Support flag for HQ HBE                        *)
 
   (* PCM utils capability flags *)
-  CAPF_DMX_BLIND =
-    $00000001; (**< Support flag for blind downmixing.             *)
-  CAPF_DMX_PCE =
-    $00000002; (**< Support flag for guided downmix with data from MPEG-2/4 \
+  CAPF_DMX_BLIND
+    = $00000001; (**< Support flag for blind downmixing.             *)
+  CAPF_DMX_PCE
+    = $00000002; (**< Support flag for guided downmix with data from MPEG-2/4
                   Program Config Elements (PCE). *)
-  CAPF_DMX_ARIB =
-    $00000004; (**< Support flag for PCE guided downmix with slightly different \
+  CAPF_DMX_ARIB
+    = $00000004; (**< Support flag for PCE guided downmix with slightly different
                   equations and levels to fulfill ARIB standard. *)
-  CAPF_DMX_DVB =
-    $00000008; (**< Support flag for guided downmix with data from DVB ancillary \
+  CAPF_DMX_DVB
+    = $00000008; (**< Support flag for guided downmix with data from DVB ancillary
                   data fields. *)
-  CAPF_DMX_CH_EXP =
-    $00000010; (**< Support flag for simple upmixing by dublicating channels or \
+  CAPF_DMX_CH_EXP
+    = $00000010; (**< Support flag for simple upmixing by dublicating channels or
                   adding zero channels. *)
-  CAPF_DMX_6_CH =
-    $00000020; (**< Support flag for 5.1 channel configuration (input and \
+  CAPF_DMX_6_CH
+    = $00000020; (**< Support flag for 5.1 channel configuration (input and
                   output). *)
-  CAPF_DMX_8_CH =
-    $00000040; (**< Support flag for 6 and 7.1 channel configurations (input and \
+  CAPF_DMX_8_CH
+    = $00000040; (**< Support flag for 6 and 7.1 channel configurations (input and
                   output). *)
-  CAPF_DMX_24_CH =
-    $00000080; (**< Support flag for 22.2 channel configuration (input and \
+  CAPF_DMX_24_CH
+    = $00000080; (**< Support flag for 22.2 channel configuration (input and
                   output). *)
-  CAPF_LIMITER =
-    $00002000; (**< Support flag for signal level limiting. \
+  CAPF_LIMITER
+    = $00002000; (**< Support flag for signal level limiting.
                 *)
 
   (* MPEG Surround capability flags *)
-  CAPF_MPS_STD =
-    $00000001; (**< Support flag for MPEG Surround.           *)
-  CAPF_MPS_LD =
-    $00000002; (**< Support flag for Low Delay MPEG Surround. \
+  CAPF_MPS_STD
+    = $00000001; (**< Support flag for MPEG Surround.           *)
+  CAPF_MPS_LD
+    = $00000002; (**< Support flag for Low Delay MPEG Surround.
                 *)
-  CAPF_MPS_USAC =
-    $00000004; (**< Support flag for USAC MPEG Surround.      *)
-  CAPF_MPS_HQ =
-    $00000010; (**< Support flag indicating if high quality processing is \
+  CAPF_MPS_USAC
+    = $00000004; (**< Support flag for USAC MPEG Surround.      *)
+  CAPF_MPS_HQ
+    = $00000010; (**< Support flag indicating if high quality processing is
                   supported *)
-  CAPF_MPS_LP =
-    $00000020; (**< Support flag indicating if partially complex (low power) \
+  CAPF_MPS_LP
+    = $00000020; (**< Support flag indicating if partially complex (low power)
                   processing is supported *)
-  CAPF_MPS_BLIND =
-    $00000040; (**< Support flag indicating if blind processing is supported *)
-  CAPF_MPS_BINAURAL =
-    $00000080; (**< Support flag indicating if binaural output is possible *)
-  CAPF_MPS_2CH_OUT =
-    $00000100; (**< Support flag indicating if 2ch output is possible      *)
-  CAPF_MPS_6CH_OUT =
-    $00000200; (**< Support flag indicating if 6ch output is possible      *)
-  CAPF_MPS_8CH_OUT =
-    $00000400; (**< Support flag indicating if 8ch output is possible      *)
-  CAPF_MPS_1CH_IN =
-    $00001000; (**< Support flag indicating if 1ch dmx input is possible   *)
-  CAPF_MPS_2CH_IN =
-    $00002000; (**< Support flag indicating if 2ch dmx input is possible   *)
-  CAPF_MPS_6CH_IN =
-    $00004000; (**< Support flag indicating if 5ch dmx input is possible   *)
+  CAPF_MPS_BLIND
+    = $00000040; (**< Support flag indicating if blind processing is supported *)
+  CAPF_MPS_BINAURAL
+    = $00000080; (**< Support flag indicating if binaural output is possible *)
+  CAPF_MPS_2CH_OUT
+    = $00000100; (**< Support flag indicating if 2ch output is possible      *)
+  CAPF_MPS_6CH_OUT
+    = $00000200; (**< Support flag indicating if 6ch output is possible      *)
+  CAPF_MPS_8CH_OUT
+    = $00000400; (**< Support flag indicating if 8ch output is possible      *)
+  CAPF_MPS_1CH_IN
+    = $00001000; (**< Support flag indicating if 1ch dmx input is possible   *)
+  CAPF_MPS_2CH_IN
+    = $00002000; (**< Support flag indicating if 2ch dmx input is possible   *)
+  CAPF_MPS_6CH_IN
+    = $00004000; (**< Support flag indicating if 5ch dmx input is possible   *)
 
 (* \endcond *)
 
@@ -753,33 +728,56 @@ type
    * \param lev1  2nd level of version number.
    * \param lev2  3rd level of version number.
    *)
-  (*
-  #define LIB_VERSION(lev0, lev1, lev2)                      \
-    ((lev0 << 24 & $ff000000) | (lev1 << 16 & $00ff0000) | \
-     (lev2 << 8 & $0000ff00))
-  *)
-  function LIB_VERSION(lev0: Integer; lev1: Integer; lev2: Integer): integer;
+  //LIB_VERSION(lev0, lev1, lev2)                      \
+  //  ((lev0 << 24 & = $ff000000) | (lev1 << 16 & = $00ff0000) | \
+  //   (lev2 << 8 & = $0000ff00))
+  function LIB_VERSION(lev0: byte; lev1: byte; lev2: byte): Integer;
 
   (**
    *  Build text string of version.
    *)
-  (*
-  #define LIB_VERSION_STRING(info)                                               \
-    FDKsprintf((info)->versionStr, "%d.%d.%d", (((info)->version >> 24) & $ff), \
-               (((info)->version >> 16) & $ff),                                 \
-               (((info)->version >> 8) & $ff))
-  *)
+  //LIB_VERSION_STRING(info)                                               \
+  //  FDKsprintf((info)->versionStr, "%d.%d.%d", (((info)->version >> 24) & = $ff), \
+  //             (((info)->version >> 16) & = $ff),                                 \
+  //             (((info)->version >> 8) & = $ff))
   function LIB_VERSION_STRING(info: LIB_INFO): string;
 
+
   (** Initialize library info. *)
-  procedure FDKinitLibInfo(var info: array of LIB_INFO);
+  //static FDK_AUDIO_INLINE void FDKinitLibInfo(LIB_INFO* info) {
+  //  int i;
+  //
+  //  for (i = 0; i < FDK_MODULE_LAST; i++) {
+  //    info[i].module_id = FDK_NONE;
+  //  }
+  //}  procedure FDKinitLibInfo(var info: array of LIB_INFO);
 
   (** Aquire supported features of library. *)
-  function FDKlibInfo_getCapabilities(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Cardinal;
+  //static FDK_AUDIO_INLINE UINT
+  //FDKlibInfo_getCapabilities(const LIB_INFO* info, FDK_MODULE_ID module_id) {
+  //  int i;
+  //
+  //  for (i = 0; i < FDK_MODULE_LAST; i++) {
+  //    if (info[i].module_id == module_id) {
+  //      return info[i].flags;
+  //    }
+  //  }
+  //  return 0;
+  //}  function FDKlibInfo_getCapabilities(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Cardinal;
 
   (** Search for next free tab. *)
-  function FDKlibInfo_lookup(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Integer;
-
+  //static FDK_AUDIO_INLINE INT FDKlibInfo_lookup(const LIB_INFO* info,
+  //                                              FDK_MODULE_ID module_id) {
+  //  int i = -1;
+  //
+  //  for (i = 0; i < FDK_MODULE_LAST; i++) {
+  //    if (info[i].module_id == module_id) return -1;
+  //    if (info[i].module_id == FDK_NONE) break;
+  //  }
+  //  if (i == FDK_MODULE_LAST) return -1;
+  //
+  //  return i;
+  //}  function FDKlibInfo_lookup(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Integer;
 type
   (*
    * ##############################################################################################
@@ -793,17 +791,16 @@ type
   FDK_bufDescr = record
     ppBase: Pointer;  (*!< Pointer to an array containing buffer base addresses.
                          Set to NULL for buffer requirement info. *)
-    pBufSize: PInteger; (*!< Pointer to an array containing the number of elements
+    pBufSize: PCardinal; (*!< Pointer to an array containing the number of elements
                        that can be placed in the specific buffer. *)
-    pEleSize: PInteger; (*!< Pointer to an array containing the element size for each
+    pEleSize: PCardinal; (*!< Pointer to an array containing the element size for each
                        buffer in bytes. That is mostly the number returned by the
                        sizeof() operator for the data type used for the specific
                        buffer. *)
-    pBufType: PInteger; (*!< Pointer to an array of bit fields containing a description
+    pBufType: PCardinal; (*!< Pointer to an array of bit fields containing a description
                        for each buffer. See XXX below for more details.  *)
-    numBufs: Integer; (*!< Total number of buffers. *)
+    numBufs: Cardinal; (*!< Total number of buffers. *)
   end;
-
 
 (**
  * Buffer type description field.
@@ -822,102 +819,104 @@ const
 
 implementation
 
-function TT_IS_PACKET(x: TRANSPORT_TYPE): boolean;
-begin
-  result := ((x = TRANSPORT_TYPE.TT_MP4_RAW) or (x = TRANSPORT_TYPE.TT_DRM) or (x = TRANSPORT_TYPE.TT_MP4_LATM_MCP0) or (x = TRANSPORT_TYPE.TT_MP4_LATM_MCP1));
-end;
-
-function CAN_DO_PS(aot: AUDIO_OBJECT_TYPE): boolean;
-begin
-  result := ((aot = AUDIO_OBJECT_TYPE.AOT_AAC_LC) or (aot = AUDIO_OBJECT_TYPE.AOT_SBR) or (aot = AUDIO_OBJECT_TYPE.AOT_PS) or (aot = AUDIO_OBJECT_TYPE.AOT_ER_BSAC) or (aot = AUDIO_OBJECT_TYPE.AOT_DRM_AAC));
-end;
-
-function IS_USAC(aot: AUDIO_OBJECT_TYPE): boolean;
-begin
-  result := aot = AUDIO_OBJECT_TYPE.AOT_USAC;
-end;
-
-function IS_LOWDELAY(aot: AUDIO_OBJECT_TYPE): boolean;
-begin
-  result := (aot = AUDIO_OBJECT_TYPE.AOT_ER_AAC_LD) or (aot = AUDIO_OBJECT_TYPE.AOT_ER_AAC_ELD);
-end;
-
-function IS_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
-begin
-  result := (elementId = MP4_ELEMENT_ID.ID_SCE) or (elementId = MP4_ELEMENT_ID.ID_CPE) or (elementId = MP4_ELEMENT_ID.ID_LFE) or (elementId = MP4_ELEMENT_ID.ID_USAC_SCE) or (elementId = MP4_ELEMENT_ID.ID_USAC_CPE) or (elementId = MP4_ELEMENT_ID.ID_USAC_LFE);
-end;
-
-function IS_MP4_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
-begin
-  result := (elementId = MP4_ELEMENT_ID.ID_SCE) or (elementId = MP4_ELEMENT_ID.ID_CPE) or (elementId = MP4_ELEMENT_ID.ID_LFE);
-end;
-
-function IS_USAC_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
-begin
-  result := (elementId = MP4_ELEMENT_ID.ID_USAC_SCE) or (elementId = MP4_ELEMENT_ID.ID_USAC_CPE) or (elementId = MP4_ELEMENT_ID.ID_USAC_LFE);
-end;
-
-function LIB_VERSION(lev0: Integer; lev1: Integer; lev2: Integer): integer;
-begin
-  result := ((lev0 shl 24) and $ff000000) or ((lev1 shl 16) and $00ff0000) or ((lev2 shl 8) and $0000ff00);
-end;
-
-function LIB_VERSION_STRING(info: LIB_INFO): string;
-begin
-  result := string(info.versionStr);
-  if info.versionStr = '' then
-    result := Format('%d.%d.%d', [(info.versionStr), ((info.version shr 24) and $ff), ((info.version shr 16) and $ff), ((info.version shr 8) and $ff)]);
-end;
-
-(** Initialize library info. *)
-procedure FDKinitLibInfo(var info: array of LIB_INFO);
-var
-  i : integer;
-begin
-  for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
+  function TT_IS_PACKET(x: TRANSPORT_TYPE): boolean;
   begin
-    info[i].module_id := FDK_MODULE_ID.FDK_NONE;
+    result := ((x = TRANSPORT_TYPE.TT_MP4_RAW) or (x = TRANSPORT_TYPE.TT_DRM) or (x = TRANSPORT_TYPE.TT_MP4_LATM_MCP0) or (x = TRANSPORT_TYPE.TT_MP4_LATM_MCP1));
   end;
-end;
 
-(** Aquire supported features of library. *)
-function FDKlibInfo_getCapabilities(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Cardinal;
-var
-  i : integer;
-begin
-  result := 0;
-  for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
+  function CAN_DO_PS(aot: AUDIO_OBJECT_TYPE): boolean;
   begin
-    if Info[i].module_id = module_id then
+    result := ((aot = AUDIO_OBJECT_TYPE.AOT_AAC_LC) or (aot = AUDIO_OBJECT_TYPE.AOT_SBR) or (aot = AUDIO_OBJECT_TYPE.AOT_PS) or (aot = AUDIO_OBJECT_TYPE.AOT_ER_BSAC) or (aot = AUDIO_OBJECT_TYPE.AOT_DRM_AAC));
+  end;
+
+  function IS_USAC(aot: AUDIO_OBJECT_TYPE): boolean;
+  begin
+    result := aot = AUDIO_OBJECT_TYPE.AOT_USAC;
+  end;
+
+  function IS_LOWDELAY(aot: AUDIO_OBJECT_TYPE): boolean;
+  begin
+    result := (aot = AUDIO_OBJECT_TYPE.AOT_ER_AAC_LD) or (aot = AUDIO_OBJECT_TYPE.AOT_ER_AAC_ELD);
+  end;
+
+  function IS_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  begin
+    result := (elementId = MP4_ELEMENT_ID.ID_SCE) or (elementId = MP4_ELEMENT_ID.ID_CPE) or (elementId = MP4_ELEMENT_ID.ID_LFE) or (elementId = MP4_ELEMENT_ID.ID_USAC_SCE) or (elementId = MP4_ELEMENT_ID.ID_USAC_CPE) or (elementId = MP4_ELEMENT_ID.ID_USAC_LFE);
+  end;
+
+  function IS_MP4_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  begin
+    result := (elementId = MP4_ELEMENT_ID.ID_SCE) or (elementId = MP4_ELEMENT_ID.ID_CPE) or (elementId = MP4_ELEMENT_ID.ID_LFE);
+  end;
+
+  function IS_USAC_CHANNEL_ELEMENT(elementId: MP4_ELEMENT_ID): boolean;
+  begin
+    result := (elementId = MP4_ELEMENT_ID.ID_USAC_SCE) or (elementId = MP4_ELEMENT_ID.ID_USAC_CPE) or (elementId = MP4_ELEMENT_ID.ID_USAC_LFE);
+  end;
+
+  function LIB_VERSION(lev0: byte; lev1: byte; lev2: byte): Integer;
+  begin
+    result := (lev0 shl 24) or (lev1 shl 16) or (lev2 shl 8);
+  end;
+
+  function LIB_VERSION_STRING(info: LIB_INFO): string;
+  begin
+    result := string(info.versionStr);
+    if info.versionStr = '' then
+      result := Format('%d.%d.%d', [(info.versionStr), ((info.version shr 24) and $ff), ((info.version shr 16) and $ff), ((info.version shr 8) and $ff)]);
+  end;
+
+  (** Initialize library info. *)
+  procedure FDKinitLibInfo(var info: array of LIB_INFO);
+  var
+    i : integer;
+  begin
+    for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
     begin
-      result := Info[i].flags;
-      break;
+      info[i].module_id := FDK_MODULE_ID.FDK_NONE;
     end;
   end;
-end;
 
-
-function FDKlibInfo_lookup(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Integer;
-var
-  i : integer;
-begin
-  result := 0;
-  for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
+  (** Aquire supported features of library. *)
+  function FDKlibInfo_getCapabilities(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Cardinal;
+  var
+    i : integer;
   begin
-    if Info[i].module_id = module_id then
+    result := 0;
+    for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
     begin
-      result := -1;
-      exit;
+      if Info[i].module_id = module_id then
+      begin
+        result := Info[i].flags;
+        break;
+      end;
     end;
-    if Info[i].module_id = FDK_MODULE_ID.FDK_NONE then
-    begin
-      result := i;
-      break;
-    end;
-    if i = Integer(FDK_MODULE_ID.FDK_MODULE_LAST) then
-      result := -1;
   end;
-  result := i
-end;
+
+
+  function FDKlibInfo_lookup(const info: array of LIB_INFO; module_id: FDK_MODULE_ID): Integer;
+  var
+    i : integer;
+  begin
+    result := -1;
+    for i := 0 to Integer(FDK_MODULE_ID.FDK_MODULE_LAST) - 1 do
+    begin
+      if Info[i].module_id = module_id then
+      begin
+        result := -1;
+        exit;
+      end else
+      if Info[i].module_id = FDK_MODULE_ID.FDK_NONE then
+      begin
+        result := i;
+        exit;
+      end else
+      if i = Integer(FDK_MODULE_ID.FDK_MODULE_LAST) then
+      begin
+        result := -1;
+        exit;
+      end;
+    end;
+  end;
 
 end.

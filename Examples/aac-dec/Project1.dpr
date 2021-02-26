@@ -27,8 +27,8 @@ var
   FHandle       : HANDLE_AACDECODER;
   FLibInfo      : array[0..Integer(FDK_MODULE_LAST)-1] of LIB_INFO;
 
-  FErrorCode    : AAC_DECODER_ERROR;
   FCStreamInfo  : PCStreamInfo;
+  FErrorCode    : AAC_DECODER_ERROR;
 
   // buffers
   FOutputBuff   : PSmallInt;
@@ -67,8 +67,18 @@ begin
     GetMem(FInputBuff, INPUT_BUFF_SIZE);
     FHandle := aacDecoder_Open(TRANSPORT_TYPE.TT_MP4_ADTS, 1);
     try
-    	FErrorCode := aacDecoder_SetParam(FHandle, AAC_CONCEAL_METHOD, 1);
-	    FErrorCode := aacDecoder_SetParam(FHandle, AAC_PCM_LIMITER_ENABLE, 0);
+    	if (aacDecoder_SetParam(FHandle, AAC_CONCEAL_METHOD, 1) <> AAC_DECODER_ERROR.AAC_DEC_OK) then
+      begin
+        writeln('Unable to set the AAC_CONCEAL_METHOD');
+        exit;
+      end;
+
+	    if (aacDecoder_SetParam(FHandle, AAC_PCM_LIMITER_ENABLE, 0) <> AAC_DECODER_ERROR.AAC_DEC_OK) then
+      begin
+        writeln('Unable to set the AAC_PCM_LIMITER_ENABLE');
+        exit;
+      end;
+
 
       {$REGION 'Audio Specific Config'}
         (*
@@ -205,8 +215,8 @@ begin
             write('*');
             FReadBytes:= lSourceStream.ReadData(FInputBuff, INPUT_BUFF_SIZE);
             FByteFilled := FReadBytes;
-            FErrorCode := aacDecoder_Fill(FHandle, @FInputBuff, @FReadBytes, FByteFilled);
-            if (FErrorCode <> AAC_DEC_OK) then
+            FErrorCode := aacDecoder_Fill(FHandle, @FInputBuff, FReadBytes, FByteFilled);
+            if (FErrorCode <> AAC_DECODER_ERROR.AAC_DEC_OK) then
               raise Exception.CreateFmt('Fill failed: %x', [Integer(FErrorCode)]);
             if (FByteFilled <> 0) then
               WriteLn(Format('Unable to feed all %d input bytes, %d bytes left', [FReadBytes, FByteFilled]));
@@ -214,9 +224,9 @@ begin
             while true do
             begin
               FErrorCode := aacDecoder_DecodeFrame(FHandle, PSmallInt(FOutputBuff), OUTPUT_BUFF_SIZE div sizeof(SmallInt), 0);
-              if (FErrorCode <> AAC_DEC_OK) then
+              if (FErrorCode <> AAC_DECODER_ERROR.AAC_DEC_OK) then
               begin
-                if FErrorCode = AAC_DEC_NOT_ENOUGH_BITS then
+                if FErrorCode = AAC_DECODER_ERROR.AAC_DEC_NOT_ENOUGH_BITS then
                   break;
                 writeln(Format('Decode failed: %x', [Integer(FErrorCode)]));
               end;
