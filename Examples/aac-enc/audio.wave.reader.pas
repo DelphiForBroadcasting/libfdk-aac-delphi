@@ -272,7 +272,7 @@ type
     FBytesInChunk: TArray<Byte>;
     function Read(): boolean; override;
   public
-    property BytesInChunk: TArray<Byte> read FBytesInChunk;    
+    property BytesInChunk: TArray<Byte> read FBytesInChunk;
     constructor Create(IOStream: TBinaryReader); overload;
     destructor Destroy;
   end;
@@ -291,14 +291,15 @@ type
     property ChannelData [Index: Integer]: PByte read GetChannelData;
     property NumberOfChannel: Integer read FChannelCount;
 
-    function ReadData(Buffer: PByte; Size: Cardinal): Cardinal; overload;
-    function ReadData(Buffer: PByte; Offset, Size: Cardinal): Cardinal; overload;
+    function ReadData(Buffer: PByte; Size: Int64): Cardinal; overload;
+    function ReadData(Buffer: PByte; Offset, Size: Int64): Cardinal; overload;
+    function Eof(): boolean;
 
     constructor Create(IOStream: TBinaryReader; BitsPerSample, ChannelCount: Integer); overload;
     destructor Destroy;
 
     property Possition: Int64 read GetPosition write  SetPosition;
-    
+
   end;
 
   TWavlChunk = class(TChunk)
@@ -318,10 +319,10 @@ type
     function Read(): boolean; override;
   public
     property Length: Integer read FLength;
-    
+
     constructor Create(IOStream: TBinaryReader); overload;
     destructor Destroy;
-    
+
   end;
 
   TCuePoint = class(TObject)
@@ -342,7 +343,7 @@ type
     property ChunkStart: Cardinal read FChunkStart;
     property BlockStart: Cardinal read FBlockStart;
     property SampleOffset: Cardinal read FSampleOffset;
-        
+
     constructor Create(IOStream: TBinaryReader); overload;
     destructor Destroy;
 
@@ -358,10 +359,10 @@ type
     function Read(): boolean; override;
   public
     property CuePointCollection: TCueCollection read FCuePointCollection;
-    
+
     constructor Create(IOStream: TBinaryReader); overload;
     destructor Destroy;
-    
+
   end;
 
   TOtherChunks = class (TChunk)
@@ -387,7 +388,7 @@ type
 
     constructor Create (FileName: String);
     destructor Destroy;
-    
+
   end;
 
 implementation
@@ -397,7 +398,7 @@ constructor THeaderChunk.Create(IOStream: TBinaryReader);
 begin
   inherited Create;
   FIOStream := IOStream;
-  
+
   FOffset := 0;
   FSize := 0;
   FIdentify.Int32 := 0;
@@ -416,7 +417,7 @@ begin
   begin
     FOffset := FIOStream.BaseStream.Position;
     FIdentify.Int32 := FIOStream.ReadCardinal;
-  end else 
+  end else
   begin
     FIOStream.BaseStream.Position := FIOStream.BaseStream.Position - 4;
     FOffset := FIOStream.BaseStream.Position;
@@ -480,7 +481,7 @@ var
 
 begin
   result := inherited Read;
-  
+
   FCompressionCode:= TCompressionCode(IOStream.ReadWord);
   FNumberOfChannel:= IOStream.ReadWord;
   FSampleRate:= IOStream.ReadCardinal;
@@ -489,7 +490,7 @@ begin
   FBitsPerSample:= IOStream.ReadWord;
   if not (FBitsPerSample in [8, 16, 24, 32]) then
     raise Exception.Create ('Invalid SignificantBitPerSample!');
-    
+
   if CompressionCode <> TCompressionCode.WAVE_FORMAT_PCM then
   begin
     FExtraBytes:= IOStream.ReadWord;
@@ -661,19 +662,30 @@ begin
   Result:= FChannelsData[Index];
 end;
 
-function TDataChunk.ReadData(Buffer: PByte; Offset, Size: Cardinal): Cardinal;
+function TDataChunk.Eof(): boolean;
+begin
+  result := (Self.FIOStream.BaseStream.Position >= Self.GetSize() + FDataOffset);
+end;
+
+function TDataChunk.ReadData(Buffer: PByte; Offset, Size: Int64): Cardinal;
 begin
   if FDataOffset = 0 then
     Exit(0);
+
+  if ((Self.FIOStream.BaseStream.Position - (FDataOffset + Offset)) + Size) > Self.GetSize() then
+    Size := Size - (((Self.FIOStream.BaseStream.Position - (FDataOffset + Offset)) + Size) - Self.GetSize());
 
   Self.FIOStream.BaseStream.Position := FDataOffset + Offset;
   result := Self.FIOStream.BaseStream.Read(Buffer^, Size);
 end;
 
-function TDataChunk.ReadData(Buffer: PByte; Size: Cardinal): Cardinal;
+function TDataChunk.ReadData(Buffer: PByte; Size: Int64): Cardinal;
 begin
   if FDataOffset = 0 then
     Exit(0);
+
+  if ((Self.FIOStream.BaseStream.Position - FDataOffset) + Size) >= Self.GetSize() then
+     Size := Size - (((Self.FIOStream.BaseStream.Position - FDataOffset) + Size) - Self.GetSize());
 
   result := Self.FIOStream.BaseStream.Read(Buffer^, Size);
 end;
@@ -705,7 +717,7 @@ begin
   // set data offset
   FDataOffset := IOStream.BaseStream.Position;
 
-  SampleCount:= (Self.FSize) div (FChannelCount * (FBitsPerSample div 8));
+  SampleCount := (Self.FSize) div (FChannelCount * (FBitsPerSample div 8));
 
   SetLength(FChannelsData, FChannelCount);
   SetLength(LChannelsData, FChannelCount);
