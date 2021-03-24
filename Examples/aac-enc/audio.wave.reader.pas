@@ -260,8 +260,10 @@ type
   public
     property CompressionCode: TCompressionCode read FCompressionCode;
     property SampleRate: Cardinal read FSampleRate;
+    property AverageSamplePerSecond: Cardinal read FAverageSamplePerSecond;
     property NumberOfChannels: Word read FNumberOfChannel;
     property BitsPerSample: Word read FBitsPerSample;
+    property BlockAlign: Word read FBlockAlign;
 
     constructor Create(IOStream: TBinaryReader); overload;
     destructor Destroy;
@@ -290,7 +292,6 @@ type
   public
     property ChannelData [Index: Integer]: PByte read GetChannelData;
     property NumberOfChannel: Integer read FChannelCount;
-    property BitsPerSample: Integer read FBitsPerSample;
 
     function ReadData(Buffer: PByte; Size: Int64): Cardinal; overload;
     function ReadData(Buffer: PByte; Offset, Size: Int64): Cardinal; overload;
@@ -381,11 +382,23 @@ type
     function GetFMTChunk: TFMTChunk;
     function GetChunkByID(Identify: cardinal): TChunkCollection;
     function GetDataChunk: TDataChunk;
+
+    function GetSampleRate: Cardinal;
+    function GetAverageSamplePerSecond: Cardinal;
+    function GetBlockAlign: Word;
+    function GetBitsPerSample: Word;
+    function GetNumberOfChannel: Integer;
   public
     property ChunkByID [ChunkID: cardinal]: TChunkCollection read GetChunkByID;
     property FMTChunk: TFMTChunk read GetFMTChunk;
     property DataChunk: TDataChunk read GetDataChunk;
     property CuePoints: TCueCollection read FCuePoints;
+
+    property BitsPerSample: Word read GetBitsPerSample;
+    property NumberOfChannel: Integer read GetNumberOfChannel;
+    property SampleRate: Cardinal read GetSampleRate;
+    property AverageSamplePerSecond: Cardinal read GetAverageSamplePerSecond;
+    property BlockAlign: Word read GetBlockAlign;
 
     constructor Create (FileName: String);
     destructor Destroy;
@@ -584,6 +597,31 @@ begin
   FreeAndNil(FIOStream);
   FreeAndNil(FCuePoints);
   inherited;
+end;
+
+function TWaveReader.GetBlockAlign: Word;
+begin
+  result := FMTChunk.BlockAlign;
+end;
+
+function TWaveReader.GetAverageSamplePerSecond: Cardinal;
+begin
+  result := FMTChunk.AverageSamplePerSecond;
+end;
+
+function TWaveReader.GetSampleRate: Cardinal;
+begin
+  result := FMTChunk.SampleRate;
+end;
+
+function TWaveReader.GetBitsPerSample: Word;
+begin
+  result := FMTChunk.BitsPerSample;
+end;
+
+function TWaveReader.GetNumberOfChannel: Integer;
+begin
+  result := FMTChunk.NumberOfChannels;
 end;
 
 function TWaveReader.GetChunkByID(Identify: cardinal): TChunkCollection;
