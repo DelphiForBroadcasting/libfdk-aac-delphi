@@ -290,6 +290,7 @@ type
   public
     property ChannelData [Index: Integer]: PByte read GetChannelData;
     property NumberOfChannel: Integer read FChannelCount;
+    property BitsPerSample: Integer read FBitsPerSample;
 
     function ReadData(Buffer: PByte; Size: Int64): Cardinal; overload;
     function ReadData(Buffer: PByte; Offset, Size: Int64): Cardinal; overload;
@@ -692,12 +693,12 @@ end;
 
 procedure TDataChunk.SetPosition(const Offset: Int64);
 begin
-  Self.FIOStream.BaseStream.Position := FDataOffset + Offset;;
+  Self.FIOStream.BaseStream.Position := FDataOffset + Offset;
 end;
 
 function TDataChunk.GetPosition: Int64;
 begin
-  result := Self.FIOStream.BaseStream.Position;
+  result := Self.FIOStream.BaseStream.Position - FDataOffset;
 end;
 
 function TDataChunk.Read(): boolean;
